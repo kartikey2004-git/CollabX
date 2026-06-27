@@ -7,8 +7,100 @@ datasource db {
   provider = "postgresql"
 }
 
-model User{
-  id        String    @id @default(cuid())
-  name      String?
-  email     String    @unique
+
+model User {
+  id              String    @id @default(cuid())
+  name            String
+  email           String    @unique
+  emailVerified   Boolean   @default(false)
+  image           String?
+
+  // Credentials auth
+  passwordHash    String?   @db.Text
+
+  role            String    @default("USER")
+  banned          Boolean   @default(false)
+  banReason       String?   @db.Text
+  banExpires      DateTime? @db.Timestamptz(3)
+
+  createdAt       DateTime  @default(now()) @db.Timestamptz(3) @map("created_at")
+  updatedAt       DateTime  @updatedAt @db.Timestamptz(3) @map("updated_at")
+
+  accounts        Account[]
+  sessions        Session[]
+  documents       Document[]
+
+  @@index([createdAt])
+  @@map("users")
+}
+
+model Session {
+  id          String   @id @default(cuid())
+  token       String   @unique
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  ipAddress   String?
+  userAgent   String?
+  expiresAt   DateTime @db.Timestamptz(3)
+
+  createdAt   DateTime @default(now()) @db.Timestamptz(3) @map("created_at")
+  updatedAt   DateTime @updatedAt @db.Timestamptz(3) @map("updated_at")
+
+  @@index([userId])
+  @@index([expiresAt])
+
+  @@map("sessions")
+}
+
+model Account {
+  id                      String     @id @default(cuid())
+  userId                  String
+  user                    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  accountId               String
+  providerId              String
+  accessToken             String?    @db.Text
+  refreshToken            String?    @db.Text
+  accessTokenExpiresAt    DateTime?  @db.Timestamptz(3)
+  refreshTokenExpiresAt   DateTime?  @db.Timestamptz(3)
+  scope                   String?
+  idToken                 String?    @db.Text
+  // Used by email/password provider
+  password                String?    @db.Text
+  createdAt               DateTime   @default(now()) @db.Timestamptz(3) @map("created_at")
+  updatedAt               DateTime   @updatedAt @db.Timestamptz(3) @map("updated_at")
+
+  @@index([userId])
+  @@unique([providerId, accountId])
+  @@map("accounts")
+}
+
+model Verification {
+  id          String   @id @default(cuid())
+  identifier  String
+  value       String
+  expiresAt   DateTime @db.Timestamptz(3)
+
+  createdAt   DateTime @default(now()) @db.Timestamptz(3) @map("created_at")
+  updatedAt   DateTime @updatedAt @db.Timestamptz(3) @map("updated_at")
+
+  @@index([identifier])
+  @@index([expiresAt])
+  @@map("verifications")
+}
+
+model Document {
+  id          String   @id @default(cuid())
+  title       String
+
+  ownerId     String
+  owner       User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now()) @db.Timestamptz(3) @map("created_at")
+  updatedAt   DateTime @updatedAt @db.Timestamptz(3) @map("updated_at")
+
+  @@index([ownerId])
+  @@index([ownerId, createdAt])
+  @@map("documents")
 }
