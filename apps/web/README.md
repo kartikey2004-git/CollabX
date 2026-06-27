@@ -1,28 +1,96 @@
-## Getting Started
+# Web (`apps/web`)
 
-First, run the development server:
+Next.js frontend for the CollabX monorepo. Renders a landing page using shared UI components from `@repo/ui`.
 
-```bash
-yarn dev
+## Purpose
+
+- Public-facing web application built with the Next.js App Router
+- Consumes shared UI components, Tailwind styles, and TypeScript configs from workspace packages
+- Entry point for future product UI
+
+## Folder Structure
+
+```
+apps/web/
+├── app/
+│   ├── layout.tsx       # Root layout with TooltipProvider
+│   ├── page.tsx         # Landing page
+│   ├── not-found.tsx    # 404 page
+│   └── globals.css      # Global styles (imports shared Tailwind)
+├── lib/
+│   └── landing-data.ts  # Landing page content and links
+├── next.config.mjs      # Next.js config (aliases @repo/database)
+├── postcss.config.js    # PostCSS (uses @repo/tailwind-config)
+├── eslint.config.mjs    # ESLint config
+└── package.json
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## How to Run Individually
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+From the repository root:
 
-To create [API routes](https://nextjs.org/docs/app/building-your-application/routing/router-handlers) add an `api/` directory to the `app/` directory with a `route.ts` file. For individual endpoints, create a subfolder in the `api` directory, like `api/hello/route.ts` would map to [http://localhost:3000/api/hello](http://localhost:3000/api/hello).
+```sh
+npm run dev -w web
+```
 
-## Learn More
+Or from this directory:
 
-To learn more about Next.js, take a look at the following resources:
+```sh
+cd apps/web
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn/foundations/about-nextjs) - an interactive Next.js tutorial.
+Production build:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+```sh
+npm run build -w web
+npm run start -w web
+```
 
-## Deploy on Vercel
+## Environment Variables
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_source=github.com&utm_medium=referral&utm_campaign=turborepo-readme) from the creators of Next.js.
+No environment variables are required for the web app at this time.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+If you add client-side API calls later, use the `NEXT_PUBLIC_` prefix for values that must be exposed to the browser.
+
+## Available Scripts
+
+| Script | Description |
+| --- | --- |
+| `npm run dev` | Start Next.js dev server |
+| `npm run build` | Production build |
+| `npm run start` | Start production server |
+| `npm run lint` | Run ESLint |
+
+## Important Notes
+
+- Turborepo runs `^build` and `^db:generate` before `dev` when started from the root — `@repo/database` must be buildable even though the landing page does not query the database directly.
+- `next.config.mjs` aliases `@repo/database` to the compiled output in `packages/database/dist/`.
+- UI components are imported from `@repo/ui/components/*` (not a single barrel export).
+
+## Expected Ports
+
+| Mode | Port |
+| --- | --- |
+| Development | `3000` (Next.js default) |
+| Production | `3000` (override with `-p` on `next start`) |
+
+## Connections to Other Packages
+
+| Package | Usage |
+| --- | --- |
+| `@repo/ui` | shadcn/ui components (Badge, Button, Card, etc.) |
+| `@repo/tailwind-config` | Shared Tailwind and PostCSS configuration |
+| `@repo/typescript-config` | `nextjs.json` tsconfig preset |
+| `@repo/eslint-config` | `next.js` ESLint preset |
+| `@repo/database` | Declared dependency; webpack alias for server-side use |
+
+## Example Component Import
+
+```tsx
+import { Button } from "@repo/ui/components/button";
+
+export default function Page() {
+  return <Button>Click me</Button>;
+}
+```

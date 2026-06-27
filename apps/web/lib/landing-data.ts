@@ -14,8 +14,7 @@ import {
 	type LucideIcon,
 } from "lucide-react";
 
-export const REPO_URL = "https://github.com/akashdeep023/turborepo-setup";
-export const DOCS_URL = `${REPO_URL}#readme`;
+export const REPO_URL = "https://github.com/kartikey2004-git/CollabX";
 
 export const heroTech = [
 	"React",

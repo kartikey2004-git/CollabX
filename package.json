@@ -3,7 +3,7 @@
 	"private": true,
 	"prisma": {
 		"schema": "packages/database/prisma/schema.prisma",
-		"seed": "tsx packages/database/src/seed.ts"
+		"seed": "tsx packages/database/src/utils/seed.ts"
 	},
 	"scripts": {
 		"build": "turbo run build",

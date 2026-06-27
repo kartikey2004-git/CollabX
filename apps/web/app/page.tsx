@@ -10,7 +10,6 @@ import { Separator } from "@repo/ui/components/separator";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import {
-	DOCS_URL,
 	REPO_URL,
 	features,
 	heroTech,
@@ -56,15 +55,10 @@ export default function Home() {
 					PostgreSQL — wired, typed, and ready for production.
 				</p>
 				<div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-					<Button asChild>
+					<Button asChild className="bg-white border-border text-black hover:bg-white/50">
 						<Link href={REPO_URL} target="_blank" rel="noopener noreferrer">
 							Clone Repository
 							<ArrowRight className="size-4" />
-						</Link>
-					</Button>
-					<Button variant="outline" asChild>
-						<Link href={DOCS_URL} target="_blank" rel="noopener noreferrer">
-							Documentation
 						</Link>
 					</Button>
 				</div>
