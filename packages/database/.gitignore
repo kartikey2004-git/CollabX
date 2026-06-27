@@ -1,0 +1,4 @@
+generated
+dist
+.env
+/src/generated/prisma
