@@ -13,8 +13,6 @@ export default function ProcessSection() {
   const isProgrammaticScroll = useRef(false);
   const unlockTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const activeStep = steps.find((step) => step.id === active) ?? steps[0];
-
   const handleTitleClick = (id: number) => {
     const target = sectionRefs.current[id];
     if (!target) return;

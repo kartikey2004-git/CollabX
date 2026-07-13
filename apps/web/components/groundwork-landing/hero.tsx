@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { AnimationContainer } from "./animation-container";
 import { cn } from "@repo/ui/lib/utils";
+import Link from "next/link";
 
 export function Hero() {
   return (
@@ -40,11 +41,14 @@ export function Hero() {
 
           <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Button
+              asChild
               size="lg"
               className="h-13 rounded-none bg-black px-8 text-[15px] font-medium text-white hover:bg-neutral-900"
             >
-              Start Building
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <Link href="/login">
+                Start Building
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
             </Button>
 
             <Button

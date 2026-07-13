@@ -5,20 +5,25 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-	webpack: (config) => {
-		config.resolve.alias["@repo/database"] = path.resolve(
-			__dirname,
-			"../../packages/database/dist/index.js",
-		);
-		return config;
-	},
-	experimental: {
-		serverComponentsExternalPackages: [
-			"@prisma/client",
-			"@prisma/adapter-pg",
-			"pg",
-		],
-	},
+  webpack: (config, { nextRuntime }) => {
+    if (nextRuntime === "edge") {
+      config.ignoreWarnings = [
+        { module: /node_modules\/jose\/dist\/webapi\/lib\/deflate\.js/ },
+      ];
+    }
+    config.resolve.alias["@repo/database"] = path.resolve(
+      __dirname,
+      "../../packages/database/dist/index.js",
+    );
+    return config;
+  },
+  experimental: {
+    serverComponentsExternalPackages: [
+      "@prisma/client",
+      "@prisma/adapter-pg",
+      "pg",
+    ],
+  },
 };
 
 export default nextConfig;

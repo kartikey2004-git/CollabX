@@ -1,15 +1,22 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { authClient } from "@repo/auth";
 import { Button } from "@repo/ui/components/button";
 import { toast } from "sonner";
-import { useSession, signOut } from "@repo/auth";
 
 export default function WorkspacePage() {
   const router = useRouter();
-  const { user, isLoading } = useSession();
+  const { data: session, isPending } = authClient.useSession();
 
-  if (isLoading) {
+  useEffect(() => {
+    if (!isPending && !session) {
+      router.push("/login");
+    }
+  }, [isPending, session, router]);
+
+  if (isPending) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p>Loading...</p>
@@ -17,20 +24,24 @@ export default function WorkspacePage() {
     );
   }
 
-  if (!user) {
-    router.push("/login");
+  if (!session) {
     return null;
   }
 
+  const { user } = session;
+
   const handleSignOut = async () => {
-    try {
-      await signOut();
-      toast.success("Signed out");
-      router.push("/login");
-    } catch (err) {
-      toast.error("Failed to sign out");
-      console.error(err);
-    }
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          toast.success("Signed out");
+          router.push("/login");
+        },
+        onError: () => {
+          toast.error("Failed to sign out");
+        },
+      },
+    });
   };
 
   return (

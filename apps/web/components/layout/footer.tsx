@@ -1,6 +1,6 @@
 "use client";
 
-import { Asterisk, ArrowRight } from "lucide-react";
+import { Asterisk } from "lucide-react";
 import { nav, NavItem } from "../../lib/landing-data";
 
 export default function GroundworkFooter() {

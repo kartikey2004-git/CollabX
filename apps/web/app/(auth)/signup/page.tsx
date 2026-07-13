@@ -1,16 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { authClient } from "@repo/auth";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Card } from "@repo/ui/components/card";
 import { toast } from "sonner";
-import { authClient } from "@repo/auth";
 
 export default function SignupPage() {
   const router = useRouter();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -19,6 +20,8 @@ export default function SignupPage() {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
+
+    if (!name) newErrors.name = "Name is required";
 
     if (!email) newErrors.email = "Email is required";
     if (email && !email.includes("@")) newErrors.email = "Invalid email format";
@@ -34,64 +37,41 @@ export default function SignupPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSignup = async (e: React.FormEvent) => {
+  const handleSignup = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!validateForm()) return;
 
     setLoading(true);
     try {
-      const { data, error } = await authClient.signUp.email({
-        email,
-        password,
-        name: email.split("@")[0],
-      });
+      const { error } = await authClient.signUp.email({ name, email, password });
 
       if (error) {
         toast.error(error.message || "Signup failed");
         return;
       }
 
-      if (data?.user) {
-        toast.success("Account created! Verification email sent.");
-        router.push("/verify-email");
-      }
-    } catch (err) {
-      toast.error("An unexpected error occurred");
-      console.error(err);
+      toast.success("Account created! Verification email sent.");
+      router.push("/verify-email");
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleSignup = async () => {
-    setLoading(true);
-    try {
-      await authClient.signIn.social({
-        provider: "google",
-        callbackURL: "/workspace",
-      });
-    } catch (err) {
-      toast.error("Google signup failed");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    const { error } = await authClient.signIn.social({
+      provider: "google",
+      callbackURL: "/workspace",
+    });
+    if (error) toast.error(error.message || "Google signup failed");
   };
 
   const handleGithubSignup = async () => {
-    setLoading(true);
-    try {
-      await authClient.signIn.social({
-        provider: "github",
-        callbackURL: "/workspace",
-      });
-    } catch (err) {
-      toast.error("GitHub signup failed");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    const { error } = await authClient.signIn.social({
+      provider: "github",
+      callbackURL: "/workspace",
+    });
+    if (error) toast.error(error.message || "GitHub signup failed");
   };
 
   return (
@@ -102,6 +82,19 @@ export default function SignupPage() {
           <p className="mb-6 text-sm text-slate-600">Join CollabX today</p>
 
           <form onSubmit={handleSignup} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium">Name</label>
+              <Input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Jane Doe"
+                disabled={loading}
+                className={errors.name ? "border-red-500" : ""}
+              />
+              {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
+            </div>
+
             <div>
               <label className="block text-sm font-medium">Email</label>
               <Input

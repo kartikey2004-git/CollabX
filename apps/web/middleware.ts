@@ -1,23 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSessionCookie } from "better-auth/cookies";
 
-const PUBLIC_ROUTES = ["/", "/login", "/signup", "/forgot-password"];
-const AUTH_ROUTES = ["/verify-email", "/reset-password"];
+const AUTH_ONLY_ROUTES = ["/login", "/signup"];
 const PROTECTED_ROUTES = ["/workspace"];
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  const sessionToken = request.cookies.get("better-auth.session_token")?.value;
+  // Cookie-existence check only (no DB/signature validation) — fast,
+  // optimistic redirect. Pages must still validate the session themselves.
+  const sessionCookie = getSessionCookie(request);
 
-  // Redirect authenticated users away from auth pages
-  if (
-    sessionToken &&
-    (pathname.startsWith("/login") || pathname.startsWith("/signup"))
-  ) {
+  if (sessionCookie && AUTH_ONLY_ROUTES.some((route) => pathname.startsWith(route))) {
     return NextResponse.redirect(new URL("/workspace", request.url));
   }
 
-  // Redirect unauthenticated users to login for protected routes
-  if (!sessionToken && PROTECTED_ROUTES.some((route) => pathname.startsWith(route))) {
+  if (!sessionCookie && PROTECTED_ROUTES.some((route) => pathname.startsWith(route))) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
@@ -25,7 +22,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|api).*)",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api).*)"],
 };

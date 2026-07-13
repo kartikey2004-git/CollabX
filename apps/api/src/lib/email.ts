@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { config } from "../config";
+import logger from "../config/logger";
 
 const resend = new Resend(config.resendApiKey);
 const FROM_EMAIL = config.resendFromEmail;
@@ -7,11 +8,9 @@ const FROM_EMAIL = config.resendFromEmail;
 export async function sendVerificationEmail({
   email,
   verificationUrl,
-  token,
 }: {
   email: string;
   verificationUrl: string;
-  token: string;
 }) {
   try {
     await resend.emails.send({
@@ -40,18 +39,16 @@ export async function sendVerificationEmail({
       `,
     });
   } catch (error) {
-    console.error("Verification email failed:", { email, error });
+    logger.error({ email, error }, "Verification email failed");
   }
 }
 
 export async function sendPasswordResetEmail({
   email,
   resetUrl,
-  token,
 }: {
   email: string;
   resetUrl: string;
-  token: string;
 }) {
   try {
     await resend.emails.send({
@@ -83,6 +80,6 @@ export async function sendPasswordResetEmail({
       `,
     });
   } catch (error) {
-    console.error("Password reset email failed:", { email, error });
+    logger.error({ email, error }, "Password reset email failed");
   }
 }

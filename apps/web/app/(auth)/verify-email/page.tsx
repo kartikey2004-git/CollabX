@@ -1,18 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { authClient } from "@repo/auth";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Card } from "@repo/ui/components/card";
 import { toast } from "sonner";
 
+const RESEND_COOLDOWN_SECONDS = 60;
+
 export default function VerifyEmailPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
-  const [canResend, setCanResend] = useState(true);
   const [resendCountdown, setResendCountdown] = useState(0);
+
+  useEffect(() => {
+    if (resendCountdown <= 0) return;
+    const timer = setTimeout(() => setResendCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCountdown]);
 
   const handleResendEmail = async () => {
     if (!email) {
@@ -22,25 +30,25 @@ export default function VerifyEmailPage() {
 
     setLoading(true);
     try {
-      // TODO: Implement resend verification email endpoint
+      const { error } = await authClient.sendVerificationEmail({
+        email,
+        callbackURL: "/login",
+      });
+
+      if (error) {
+        toast.error(error.message || "Failed to resend verification email");
+        return;
+      }
+
       toast.success("Verification email sent!");
       setSent(true);
-      setCanResend(false);
-      setResendCountdown(60);
-    } catch (err) {
-      toast.error("Failed to resend verification email");
-      console.error(err);
+      setResendCountdown(RESEND_COOLDOWN_SECONDS);
     } finally {
       setLoading(false);
     }
   };
 
-  // Countdown timer
-  if (resendCountdown > 0) {
-    setTimeout(() => setResendCountdown(resendCountdown - 1), 1000);
-  } else if (resendCountdown === 0 && !canResend) {
-    setCanResend(true);
-  }
+  const canResend = resendCountdown === 0;
 
   if (sent) {
     return (

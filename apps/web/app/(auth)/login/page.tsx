@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { authClient } from "@repo/auth";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Card } from "@repo/ui/components/card";
 import { toast } from "sonner";
-import { authClient } from "@repo/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,7 +16,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!email || !password) {
@@ -29,56 +29,38 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      const { data, error } = await authClient.signIn.email({
-        email,
-        password,
-      });
+      const { error } = await authClient.signIn.email({ email, password });
 
       if (error) {
         toast.error(error.message || "Login failed");
         return;
       }
 
-      if (data?.session) {
-        toast.success("Logged in successfully!");
-        router.push("/workspace");
-      }
-    } catch (err) {
-      toast.error("An unexpected error occurred");
-      console.error(err);
+      toast.success("Logged in successfully!");
+      router.push("/workspace");
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleSignin = async () => {
-    setLoading(true);
-    try {
-      await authClient.signIn.social({
-        provider: "google",
-        callbackURL: "/workspace",
-      });
-    } catch (err) {
-      toast.error("Google signin failed");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    const { error } = await authClient.signIn.social({
+      provider: "google",
+      callbackURL: `${
+        process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+      }/workspace`,
+    });
+    if (error) toast.error(error.message || "Google sign-in failed");
   };
 
   const handleGithubSignin = async () => {
-    setLoading(true);
-    try {
-      await authClient.signIn.social({
-        provider: "github",
-        callbackURL: "/workspace",
-      });
-    } catch (err) {
-      toast.error("GitHub signin failed");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    const { error } = await authClient.signIn.social({
+      provider: "github",
+      callbackURL: `${
+        process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+      }/workspace`,
+    });
+    if (error) toast.error(error.message || "GitHub sign-in failed");
   };
 
   return (
@@ -86,7 +68,9 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <div className="p-8">
           <h1 className="mb-2 text-2xl font-bold">Welcome Back</h1>
-          <p className="mb-6 text-sm text-slate-600">Sign in to your CollabX account</p>
+          <p className="mb-6 text-sm text-slate-600">
+            Sign in to your CollabX account
+          </p>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
@@ -102,7 +86,9 @@ export default function LoginPage() {
                 disabled={loading}
                 className={errors.email ? "border-red-500" : ""}
               />
-              {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+              )}
             </div>
 
             <div>
@@ -118,7 +104,9 @@ export default function LoginPage() {
                 disabled={loading}
                 className={errors.password ? "border-red-500" : ""}
               />
-              {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-500">{errors.password}</p>
+              )}
             </div>
 
             <div className="text-right">
@@ -164,7 +152,10 @@ export default function LoginPage() {
 
           <p className="mt-6 text-center text-sm">
             Don't have an account?{" "}
-            <Link href="/signup" className="font-medium text-blue-600 hover:underline">
+            <Link
+              href="/signup"
+              className="font-medium text-blue-600 hover:underline"
+            >
               Sign up
             </Link>
           </p>

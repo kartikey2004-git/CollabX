@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { authClient } from "@repo/auth";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Card } from "@repo/ui/components/card";
 import { toast } from "sonner";
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -38,19 +39,25 @@ export default function ResetPasswordPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!validateForm() || !token) return;
 
     setLoading(true);
     try {
-      // TODO: Call reset password endpoint
+      const { error } = await authClient.resetPassword({
+        newPassword: password,
+        token,
+      });
+
+      if (error) {
+        toast.error(error.message || "Failed to reset password");
+        return;
+      }
+
       toast.success("Password reset successfully! Redirecting to login...");
       setTimeout(() => router.push("/login"), 1500);
-    } catch (err) {
-      toast.error("Failed to reset password");
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -109,5 +116,13 @@ export default function ResetPasswordPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center">Loading...</div>}>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

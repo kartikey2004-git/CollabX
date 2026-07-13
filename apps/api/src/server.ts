@@ -1,10 +1,4 @@
-import dotenv from "dotenv";
-import path from "node:path";
-
-dotenv.config({
-  path: path.resolve(process.cwd(), ".env"),
-});
-
+import "./env";
 import { app } from "./app";
 import { config } from "./config";
 import logger from "./config/logger";
