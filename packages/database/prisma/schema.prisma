@@ -1,3 +1,7 @@
+// Groundwork : multi-tenant, AI-enhanced collaborative workspace (think Notion meets Obsidian, with built-in RAG/AI capabilities).
+
+// This schema powers a collaborative knowledge base.
+
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -7,100 +11,470 @@ datasource db {
   provider = "postgresql"
 }
 
+// Prevents typos (Admin vs admin). Enforces strict RBAC at the DB level and we have to perform middleware checks like if (member.role !== 'VIEWER') allowEdit().
+
+enum WorkspaceRole {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+// Dictates frontend rendering logic which helps in frontend switches component: type === 'EXCALIDRAW' ? <Excalidraw/> : <Markdown/>.
+
+enum ArtifactType {
+  MARKDOWN
+  EXCALIDRAW
+  DB_SCHEMA
+  AI_NOTE
+}
+
+// Manages the AI background job state machine where worker picks up NOT_INDEXED, updates to INDEXING, finishes and sets INDEXED. If doc is edited, set to STALE.
+
+enum IndexStatus {
+  NOT_INDEXED
+  INDEXING
+  INDEXED
+  STALE
+}
+
+// A human being using the app which is core identity, authentication, and profile management
 
 model User {
-  id              String    @id @default(cuid())
-  name            String
-  email           String    @unique
-  emailVerified   Boolean   @default(false)
-  image           String?
+  id String @id @default(cuid()) // primary keys  are collision-resistant, URL-safe, and shorter than UUIDv4 used for API routing, external identifiers.
 
-  // Credentials auth
-  passwordHash    String?   @db.Text
+  // name and email is normalized identity for display, login, notifications.
 
-  role            String    @default("USER")
-  banned          Boolean   @default(false)
-  banReason       String?   @db.Text
-  banExpires      DateTime? @db.Timestamptz(3)
+  name  String
+  email String @unique // prevents duplicate accounts with the same email.
 
-  createdAt       DateTime  @default(now()) @db.Timestamptz(3) @map("created_at")
-  updatedAt       DateTime  @updatedAt @db.Timestamptz(3) @map("updated_at")
+  // id is immutable and email must remain unique.
 
-  accounts        Account[]
-  sessions        Session[]
-  documents       Document[]
+  emailVerified Boolean @default(false) // Prevents spam/abuse by ensuring email ownership which is gating features (e.g., creating workspaces).
 
-  @@index([createdAt])
+  image String? // URL to avatar used for User Interface profile display
+
+  passwordHash String? @db.Text // Bcrypt/Argon2 hash: Text allows long hashes used for credential login (null if OAuth only).
+
+  // Platform-level admin controls for moderation, restricting abusive users.
+
+  role       String    @default("USER")
+  banned     Boolean   @default(false)
+  banReason  String?   @db.Text
+  banExpires DateTime? @db.Timestamptz(3)
+
+  // For Audit trail where Timestamptz handles timezones and (3) gives ms precision.
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  accounts Account[]
+  sessions Session[]
+
+  // App Relations
+  ownedWorkspaces Workspace[] @relation("WorkspaceOwner")
+
+  workspaceMembers WorkspaceMember[]
+
+  createdArtifacts Artifact[] @relation("ArtifactCreator")
+  updatedArtifacts Artifact[] @relation("ArtifactUpdater")
+
+  createdVersions Version[] @relation("VersionCreator")
+  comments        Comment[]
+
+  createdProjects Project[] @relation("ProjectCreator")
+  updatedProjects Project[] @relation("ProjectUpdater")
+
+  @@index([createdAt]) // Sorting users by "Newest" and also B-Tree makes this O(log N) but its tradeoff is slight write overhead.
+
   @@map("users")
 }
 
+// Auth mechanisms which handles credentials, OAuth (GitHub/Google), magic links, and session tracking securely.
+
 model Session {
-  id          String   @id @default(cuid())
-  token       String   @unique
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id String @id @default(cuid())
 
-  ipAddress   String?
-  userAgent   String?
-  expiresAt   DateTime @db.Timestamptz(3)
+  token String @unique // Secure and random session identifier which is in cookie/Header usef for auth validation and also ensures session tokens are globally unique for fast, secure lookups.
 
-  createdAt   DateTime @default(now()) @db.Timestamptz(3) @map("created_at")
-  updatedAt   DateTime @updatedAt @db.Timestamptz(3) @map("updated_at")
+  // token is the actual secret used for auth and id is for internal DB relations.
 
-  @@index([userId])
-  @@index([expiresAt])
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Security context used for detecting suspicious logins, device management.
+
+  ipAddress String?
+  userAgent String?
+
+  expiresAt DateTime @db.Timestamptz(3) // Forces re-authentication enables auto-logout, security compliance.
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([userId]) // "Get all sessions for User X" which is crucial for login/device management but tradeoff is having a storage cost.
+
+  @@index([expiresAt]) // helping in cleanup jobs, Cron jobs run DELETE WHERE expiresAt < now() for orphaned and past stale/unused sessions. Index makes this lightning fast.
 
   @@map("sessions")
 }
 
 model Account {
-  id                      String     @id @default(cuid())
-  userId                  String
-  user                    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id String @id @default(cuid())
 
-  accountId               String
-  providerId              String
-  accessToken             String?    @db.Text
-  refreshToken            String?    @db.Text
-  accessTokenExpiresAt    DateTime?  @db.Timestamptz(3)
-  refreshTokenExpiresAt   DateTime?  @db.Timestamptz(3)
-  scope                   String?
-  idToken                 String?    @db.Text
-  // Used by email/password provider
-  password                String?    @db.Text
-  createdAt               DateTime   @default(now()) @db.Timestamptz(3) @map("created_at")
-  updatedAt               DateTime   @updatedAt @db.Timestamptz(3) @map("updated_at")
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
-  @@unique([providerId, accountId])
+  // OAuth provider (e.g., 'github') ID and their user ID which helps in linking external identities.
+
+  accountId  String
+  providerId String
+
+  // OAuth tokens which used for calling external APIs on behalf of the user
+
+  accessToken  String? @db.Text
+  refreshToken String? @db.Text
+
+  accessTokenExpiresAt  DateTime? @db.Timestamptz(3)
+  refreshTokenExpiresAt DateTime? @db.Timestamptz(3)
+
+  scope    String?
+  idToken  String? @db.Text
+  password String? @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@unique([providerId, accountId]) // Prevents linking the same OAuth account to multiple internal users.
+
+  @@index([userId]) // "Get all accounts for User X". Crucial for login/device management but tradeoff is having a storage cost.
+  
   @@map("accounts")
 }
 
 model Verification {
-  id          String   @id @default(cuid())
-  identifier  String
-  value       String
-  expiresAt   DateTime @db.Timestamptz(3)
+  id String @id @default(cuid())
 
-  createdAt   DateTime @default(now()) @db.Timestamptz(3) @map("created_at")
-  updatedAt   DateTime @updatedAt @db.Timestamptz(3) @map("updated_at")
+  // core identifier of the user which is email and value is token helps in password resets, email verification flows.
 
+  identifier String
+  value      String
+  type       String @default("email_verification") // "email_verification" or "password_reset"
+
+  expiresAt DateTime @db.Timestamptz(3)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@unique([identifier, type])
   @@index([identifier])
+  @@index([type])
   @@index([expiresAt])
   @@map("verifications")
 }
 
-model Document {
-  id          String   @id @default(cuid())
-  title       String
+// A Team or Organization which have multi-tenancy boundary and isolates data between different companies or teams.
 
-  ownerId     String
-  owner       User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+model Workspace {
+  id   String @id @default(cuid())
+  name String // Team name for User Interface display, billing.
 
-  createdAt   DateTime @default(now()) @db.Timestamptz(3) @map("created_at")
-  updatedAt   DateTime @updatedAt @db.Timestamptz(3) @map("updated_at")
+  ownerId String // Foreign key to User which determining who pays the bill, ultimate admin.
 
+  owner User @relation("WorkspaceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  members  WorkspaceMember[]
+  projects Project[]
+
+  @@index([name])
   @@index([ownerId])
-  @@index([ownerId, createdAt])
-  @@map("documents")
+  @@index([createdAt]) // Sorting users by "Newest" and also B-Tree makes this O(log N) but its tradeoff is slight write overhead.
+
+  @@map("workspaces")
 }
+
+// Employee/Lead which maps users to workspaces with specific permissions (RBAC).
+
+model WorkspaceMember {
+  role WorkspaceRole @default(VIEWER) // Strict Role Based Acess Control and enum prevents typos like 'Admin' vs 'admin' , we have to permission checks in middleware.
+
+  invitedAt DateTime @default(now()) @db.Timestamptz(3) // Tracks when user joined for analytics like "joined 2 days ago" user interface.
+
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  // Workspace member acts as a Junction Table and The composite key is the Primary key, ensuring a user can only be in a workspace once.
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([workspaceId, userId])
+  @@index([workspaceId])
+  @@index([userId])
+  @@index([role])
+  @@map("workspace_members")
+}
+
+// A Folder or Documentation Space which have a logical grouping of artifacts also prevents a single workspace from becoming a massive, unsearchable dump.
+
+model Project {
+  id String @id @default(cuid())
+
+  name String // project name
+
+  description String? @db.Text // project description where text allows unlimited length like project summaries.
+
+  slug String? // URL-friendly ID for SEO and clean URLs
+
+  // Audit fields for displaying "Created by Kartikey" User Interface.
+
+  createdBy String
+  creator   User   @relation("ProjectCreator", fields: [createdBy], references: [id], onDelete: Restrict)
+
+  updatedBy String?
+  updater   User?   @relation("ProjectUpdater", fields: [updatedBy], references: [id], onDelete: SetNull)
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  artifacts        Artifact[]
+  vectorEmbeddings VectorEmbedding[]
+
+  deletedAt DateTime? @db.Timestamptz(3) // Enables soft delete which keeps data for recovery/audit for further implementation of trash bin feature
+
+  @@unique([workspaceId, slug]) // ensures clean, predictable URLs within a workspace like /workspace1/api-docs are unique 
+
+  @@index([updatedAt])
+  @@index([createdBy])
+
+  @@index([workspaceId, deletedAt]) // Partial Index Candidate which helps in Fetching active projects WHERE workspaceId = X AND deletedAt IS NULL but composite index is larger than a partial index.
+
+  @@index([workspaceId])
+  @@index([name])
+  @@index([createdAt])
+  @@map("projects")
+}
+
+// A Document, Diagram, or Note which is the core content unit also supports multiple formats (Markdown, Excalidraw, DB Schema).
+
+model Artifact {
+  id String @id @default(cuid())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  parentArtifactId String? // Self foreign key for tree structure like (folders/pages) to implement functionality like nested pages.
+
+  parentArtifact Artifact? @relation("ArtifactTree", fields: [parentArtifactId], references: [id], onDelete: SetNull)
+
+  children Artifact[] @relation("ArtifactTree")
+
+  type ArtifactType // Dictates how frontend renders the content which is routing to Markdown editor , Excalidraw or DB schema.
+
+  title String // title of artifact
+
+  position Int @default(0) // Ordering among siblings which helps in supporting feature Drag-and-drop sorting
+
+  content Json // Markdown, Excalidraw JSON, DB Schema JSON, AI Notes, etc , JSONB in Postgres supports flexible schema for rich text helps in storing ProseMirror/TipTap JSON or Excalidraw JSON.
+
+  contentSize Int? // denormalized size for quick User Interface checks like "File is 2MB" warnings.
+
+  indexStatus IndexStatus @default(NOT_INDEXED) // Tracks AI embedding pipeline state which helps in Background job queue management.
+
+  lastIndexedAt DateTime? @db.Timestamptz(3) // time when last particular artifact is indexed
+
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  createdBy String
+  creator   User   @relation("ArtifactCreator", fields: [createdBy], references: [id], onDelete: Restrict)
+
+  updatedBy String?
+  updater   User?   @relation("ArtifactUpdater", fields: [updatedBy], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  versions         Version[]
+  comments         Comment[]
+  vectorEmbeddings VectorEmbedding[]
+
+  @@unique([parentArtifactId, position]) // Prevents two sibling pages from having the same sort order (e.g., both at position 1).
+
+  @@index([projectId])
+  @@index([createdBy])
+  @@index([updatedBy])
+  @@index([lastIndexedAt])
+  @@index([title])
+  @@index([updatedAt])
+  @@index([parentArtifactId])
+
+  @@index([projectId, deletedAt]) // Partial Index Candidate which helps in Fetching active artifacts WHERE projectId = X AND deletedAt IS NULL but composite index is larger than a partial index.
+
+  @@index([projectId, type])
+  @@index([projectId, indexStatus])
+  @@map("artifacts")
+}
+
+// Document Version History which provides an immutable audit trail and allows users to rollback changes.
+
+model Version {
+  id String @id @default(cuid())
+
+  artifactId String
+  artifact   Artifact @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+
+  version Int // monotonically increasing version number for "v1, v2, v3" user interface
+
+  contentSnapshot Json // Complete snapshot of the document which full immutable copy of the artifact at that time to support rollback functionality.
+
+  createdBy String
+  creator   User   @relation("VersionCreator", fields: [createdBy], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([artifactId, version]) // Prevents duplicate version numbers for the same document.
+
+  @@index([artifactId, version(sort: Desc)]) // helps in fetching the latest version of an artifact helps in descending sort matches the index order.
+
+  @@index([artifactId])
+  @@index([createdBy])
+  @@index([artifactId, createdAt(sort: Desc)])
+  @@map("versions")
+}
+
+// Feedback or Discussion comments which enables asynchronous collaboration directly on specific parts of an artifact.
+
+model Comment {
+  id String @id @default(cuid())
+
+  artifactId String
+  artifact   Artifact @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  parentCommentId String? // Self foreign-keys for threaded replies which supports Reddit-style comment threads.
+
+  parentComment Comment? @relation("CommentThread", fields: [parentCommentId], references: [id], onDelete: Cascade)
+
+  replies Comment[] @relation("CommentThread")
+
+  body String @db.Text // The comment text for display.
+
+  deletedAt DateTime? @db.Timestamptz(3)
+
+  selectionMetadata Json? // Selection/range metadata for Markdown or Excalidraw which stores highlight coordinates (e.g., line 4, char 10-20) which anchoring comments to specific text.
+
+  isResolved Boolean @default(false) // Toggles comment state for "Mark as resolved" workflow.
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  @@index([artifactId])
+
+  @@index([artifactId, createdAt(sort: Desc)]) // Fetching comments in reverse chronological order.
+
+  @@index([artifactId, isResolved]) // For fetching "show me all unresolved comments for this doc"
+
+  @@index([userId])
+  @@index([parentCommentId])
+  @@map("comments")
+}
+
+// AI Context Chunks which powers semantic search and RAG (Retrieval-Augmented Generation) by storing vectorized text.
+
+model VectorEmbedding {
+  id String @id @default(cuid())
+
+  artifactId String
+  artifact   Artifact @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  chunkIndex Int // Order of the chunk within the document for reconstructing document order.
+
+  embeddingModel String? // e.g. gemini-embedding-001 which handling model upgrades without breaking old data.
+
+  contentHash String? @db.VarChar(64) // SHA-256 of the text which helps in idempotency or prevents re-embedding unchanged text.
+
+  tokenCount Int? // Cost tracking for AI APIs for billing, rate limiting.
+
+  content String @db.Text // The raw text chunk for returning context to the LLM.
+
+  embedding Unsupported("vector(768)") // 	pgvector type 768 dimensions which enables semantic similarity search.
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([artifactId, chunkIndex])
+
+  @@unique([artifactId, embeddingModel, contentHash]) // The hash constraint allows safe "upserts" during background indexing or maintain idempotency. If the text hasn't changed (same hash), we don't create a duplicate embedding.
+
+  @@index([artifactId])
+  @@index([contentHash])
+  @@index([projectId])
+  @@map("vector_embeddings")
+}
+
+/*
+
+  - The schema lacks an explicit HNSW index on the embedding column. I already manually add this via raw SQL for fast cosine similarity!
+
+  - Index Types:
+     
+    - B-Tree: Default. Great for equality (=) and range (>, <).
+
+    - Generalized Inverted Index : Helps if we query inside the Json columns (e.g., content @> '{"type": "heading"}').
+
+    - HNSW: Required for the vector(768) column to do fast Approximate Nearest Neighbor (ANN) search.
+
+*/
+
+
+/*
+
+  - All createdAt and updatedAt @default(now()) : ensures accurate audit trails even if the application server's clock is slightly off (DB handles it).
+
+  - Required Fields and most primary keys , foreign keys : Enforces referential integrity. You can't have an Artifact without a Project.
+
+*/
+
+
+/*
+
+One-to-Many & Many-to-Many
+
+  - User ↔ Workspace: Technically Many-to-Many, resolved via the WorkspaceMember junction table. This allows adding metadata to the relationship (like role and invitedAt), which a pure M:N join table in some ORMs doesn't allow easily , but prisma suppports this
+
+  - Workspace → Project → Artifact: Strict 1:N hierarchy
+
+
+Self Relationships (Trees)
+
+  - Artifact: parentArtifactId points to itself. Creates a recursive tree (Pages inside Folders).
+
+  - Comment: parentCommentId points to itself. Creates threaded discussions.
+
+
+Cascading Behaviors (Crucial for Data Integrity)
+
+  - onDelete: Cascade: Used for Session, Account, WorkspaceMember, Project, Artifact, Version, Comment.
+
+    - Why? If a Workspace is deleted, all its Projects must vanish. Orphaned data is useless here. If a parent Comment is deleted, its replies should logically disappear too.
+
+  - onDelete: Restrict: Used for Artifact.createdBy, Version.createdBy, Project.createdBy.
+
+    - Why? Audit Integrity. If User A creates a document, deleting User A is not allowed while that document still exists. The Restrict rule prevents the deletion, requiring the application to either reassign ownership or delete the document first.
+    
+  - onDelete: SetNull: Used for Artifact.updatedBy, Project.updatedBy.
+  
+    - Why? If User B was the last person to edit a document, deleting User B does not affect the document. The editor reference is simply cleared, and the User Interface can display "Updated by Unknown". Since edit history is not ownership, it should not prevent the user from being deleted.
+    
+*/

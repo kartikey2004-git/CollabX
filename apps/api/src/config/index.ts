@@ -6,4 +6,10 @@ export const config = {
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
   githubClientId: process.env.GITHUB_CLIENT_ID || "",
   githubClientSecret: process.env.GITHUB_CLIENT_SECRET || "",
+  betterAuthUrl: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  betterAuthSecret: process.env.BETTER_AUTH_SECRET || "",
+  resendApiKey: process.env.RESEND_API_KEY || "",
+  resendFromEmail: process.env.RESEND_FROM_EMAIL || "noreply@collabx.local",
+  nextPublicApiUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000",
+  nextPublicAppUrl: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
 };
