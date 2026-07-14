@@ -68,11 +68,13 @@ function ResetPasswordContent() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center px-4 bg-gray-50">
+      <Card className="w-full max-w-md rounded-sm">
         <div className="p-8">
-          <h1 className="mb-2 text-2xl font-bold">Set New Password</h1>
-          <p className="mb-6 text-sm text-slate-600">Enter your new password below.</p>
+          <h1 className="mb-1 text-2xl font-semibold">Set New Password</h1>
+          <p className="mb-6 text-sm text-slate-600">
+            Enter your new password below.
+          </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -88,11 +90,15 @@ function ResetPasswordContent() {
                 disabled={loading}
                 className={errors.password ? "border-red-500" : ""}
               />
-              {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-500">{errors.password}</p>
+              )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium">Confirm Password</label>
+              <label className="block text-sm font-medium">
+                Confirm Password
+              </label>
               <Input
                 type="password"
                 value={confirmPassword}
@@ -105,11 +111,17 @@ function ResetPasswordContent() {
                 className={errors.confirmPassword ? "border-red-500" : ""}
               />
               {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.confirmPassword}
+                </p>
               )}
             </div>
 
-            <Button type="submit" disabled={loading} className="w-full">
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-sm bg-black text-white hover:bg-slate-800"
+            >
               {loading ? "Resetting..." : "Reset Password"}
             </Button>
           </form>

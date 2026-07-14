@@ -5,8 +5,8 @@ import { nav, NavItem } from "../../lib/landing-data";
 
 export default function GroundworkFooter() {
   return (
-    <footer className="relative overflow-hidden bg-[#0a0a0a] text-white">
-      {/* Top section */}
+    <footer className="relative overflow-hidden bg-[#0a0a0a] text-white -mb-20">
+      
       <div className="relative grid grid-cols-1 md:grid-cols-2">
         {/* Vertical divider (desktop only) */}
         <div className="absolute inset-y-0 left-1/2 hidden w-px bg-white/10 md:block" />

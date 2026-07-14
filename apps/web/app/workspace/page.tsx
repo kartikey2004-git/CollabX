@@ -3,8 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { authClient } from "@repo/auth";
-import { Button } from "@repo/ui/components/button";
-import { toast } from "sonner";
+import { WorkspaceHeader } from "../../components/workspace/workspace-header";
 
 export default function WorkspacePage() {
   const router = useRouter();
@@ -18,8 +17,11 @@ export default function WorkspacePage() {
 
   if (isPending) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p>Loading...</p>
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-border border-t-black" />
+          <p className="text-sm text-muted-foreground">Loading workspace...</p>
+        </div>
       </div>
     );
   }
@@ -30,40 +32,20 @@ export default function WorkspacePage() {
 
   const { user } = session;
 
-  const handleSignOut = async () => {
-    await authClient.signOut({
-      fetchOptions: {
-        onSuccess: () => {
-          toast.success("Signed out");
-          router.push("/login");
-        },
-        onError: () => {
-          toast.error("Failed to sign out");
-        },
-      },
-    });
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50">
-      <nav className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <h1 className="text-xl font-bold">CollabX Workspace</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-slate-600">{user.email}</span>
-            <Button onClick={handleSignOut} variant="outline" size="sm">
-              Sign Out
-            </Button>
-          </div>
+    <>
+      <WorkspaceHeader />
+      <main className="flex flex-1 flex-col gap-6 bg-background p-6">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Welcome, {user.name || "User"}!
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Build documentation, diagrams, and project knowledge in one place.
+            Start by exploring the workspace.
+          </p>
         </div>
-      </nav>
-
-      <main className="mx-auto max-w-7xl px-6 py-12">
-        <h2 className="mb-4 text-2xl font-bold">Welcome, {user.name || "User"}!</h2>
-        <p className="text-slate-600">
-          This is your protected workspace. Only authenticated users can see this page.
-        </p>
       </main>
-    </div>
+    </>
   );
 }

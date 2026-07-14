@@ -52,19 +52,23 @@ export default function VerifyEmailPage() {
 
   if (sent) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4">
-        <Card className="w-full max-w-md">
+      <div className="flex min-h-screen items-center justify-center px-4 bg-gray-50">
+        <Card className="w-full max-w-md rounded-sm">
           <div className="p-8 text-center">
-            <h1 className="mb-2 text-2xl font-bold">Check Your Email</h1>
+            <h1 className="mb-2 text-2xl font-semibold">Check Your Email</h1>
             <p className="mb-6 text-sm text-slate-600">
-              We've sent a verification link to <strong>{email}</strong>. Check your inbox and
-              click the link to verify your email.
+              We've sent a verification link to{" "}
+              <p className="text-sm font-medium">{email}</p> Check your inbox
+              and click the link to verify your email.
             </p>
             <p className="mb-6 text-xs text-slate-500">
-              The link expires in 1 hour. If you don't see it, check your spam folder.
+              The link expires in 1 hour. If you don't see it, check your spam
+              folder.
             </p>
             <Link href="/login">
-              <Button className="w-full">Back to Login</Button>
+              <Button className="w-full rounded-sm bg-black text-white hover:bg-slate-800">
+                Back to Login
+              </Button>
             </Link>
           </div>
         </Card>
@@ -73,17 +77,19 @@ export default function VerifyEmailPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center px-4 bg-white-50">
+      <Card className="w-full max-w-md rounded-sm">
         <div className="p-8">
-          <h1 className="mb-2 text-2xl font-bold">Verify Your Email</h1>
+          <h1 className="mb-2 text-2xl font-semibold">Verify Your Email</h1>
           <p className="mb-6 text-sm text-slate-600">
-            We've sent a verification link to your email. Check your inbox and click the link to
-            verify your account.
+            We've sent a verification link to your email. Check your inbox and
+            click the link to verify your account.
           </p>
 
           <div className="mb-6">
-            <label className="mb-2 block text-sm font-medium">Or enter your email to resend:</label>
+            <label className="mb-2 block text-sm font-medium">
+              Or enter your email to resend:
+            </label>
             <Input
               type="email"
               value={email}
@@ -96,7 +102,7 @@ export default function VerifyEmailPage() {
           <Button
             onClick={handleResendEmail}
             disabled={loading || !canResend}
-            className="w-full"
+            className="w-full rounded-sm bg-black text-white hover:bg-slate-800"
             variant={canResend ? "default" : "outline"}
           >
             {loading
@@ -108,7 +114,10 @@ export default function VerifyEmailPage() {
 
           <p className="mt-6 text-center text-sm text-slate-600">
             Already verified?{" "}
-            <Link href="/login" className="font-medium text-blue-600 hover:underline">
+            <Link
+              href="/login"
+              className="font-medium text-black hover:underline"
+            >
               Go to login
             </Link>
           </p>

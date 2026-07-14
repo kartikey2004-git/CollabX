@@ -6,6 +6,7 @@ import ReplyRateSection from "../components/groundwork-landing/reply-rate";
 import TestimonialBanner from "../components/groundwork-landing/testimonial-banner";
 import GroundworkEngineSection from "../components/groundwork-landing/work-engine";
 import { WorkFlow } from "../components/groundwork-landing/workflow";
+import GroundworkFooter from "../components/layout/footer";
 
 export default function Home() {
   return (
@@ -18,6 +19,7 @@ export default function Home() {
       <ReplyRateSection />
       <GroundworkEngineSection />
       <FAQSection />
+      <GroundworkFooter />
     </div>
   );
 }

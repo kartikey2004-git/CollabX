@@ -1,3 +1,4 @@
+import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { Slot } from "radix-ui"
 
@@ -37,17 +38,17 @@ function ButtonGroup({
   )
 }
 
-function ButtonGroupText({
-  className,
-  asChild = false,
-  ...props
-}: React.ComponentProps<"div"> & {
-  asChild?: boolean
-}) {
+const ButtonGroupText = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div"> & {
+    asChild?: boolean
+  }
+>(({ className, asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot.Root : "div"
 
   return (
     <Comp
+      ref={ref}
       className={cn(
         "flex items-center gap-2 rounded-md border bg-muted px-4 text-sm font-medium shadow-xs [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
         className
@@ -55,7 +56,8 @@ function ButtonGroupText({
       {...props}
     />
   )
-}
+})
+ButtonGroupText.displayName = "ButtonGroupText"
 
 function ButtonGroupSeparator({
   className,
