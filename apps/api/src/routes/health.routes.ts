@@ -1,9 +1,8 @@
 import { Router } from "express";
 import { healthCheck } from "../controllers/health.controller";
-const HealthRouter = Router();
+const TestRouter = Router();
 
-// GET /health — a simple endpoint to check that the server is running (no auth needed).
-HealthRouter.get("/health", healthCheck);
+TestRouter.get("/health", healthCheck);
 
-export default HealthRouter;
+export default TestRouter;
 
