@@ -9,11 +9,14 @@ import { Card } from "@repo/ui/components/card";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 
+// The "forgot password" page where user enters their email, we ask better-auth to send them a reset link, and show a confirmation screen once it's sent.
+
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
 
+  // Runs when the "send reset link" form is submitted.
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -24,9 +27,10 @@ export default function ForgotPasswordPage() {
 
     setLoading(true);
     try {
+      // Ask better-auth to email a reset link; the link points to /reset-password.
       const { error } = await authClient.requestPasswordReset({
         email,
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/reset-password`,
       });
 
       if (error) {
@@ -41,6 +45,7 @@ export default function ForgotPasswordPage() {
     }
   };
 
+  // After the email is sent, swap the form out for a "check your email" confirmation.
   if (sent) {
     return (
       <div className="flex min-h-screen items-center justify-center px-4 bg-gray-50">

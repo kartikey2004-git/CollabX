@@ -10,11 +10,15 @@ import { toast } from "sonner";
 
 const RESEND_COOLDOWN_SECONDS = 60;
 
+// Shown right after signup, telling the user to check their inbox, with an option to resend the verification email (rate-limited by a countdown).
+
 export default function VerifyEmailPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [resendCountdown, setResendCountdown] = useState(0);
+
+  // Decrease the resend countdown by 1 every second until it reaches 0.
 
   useEffect(() => {
     if (resendCountdown <= 0) return;
@@ -22,6 +26,7 @@ export default function VerifyEmailPage() {
     return () => clearTimeout(timer);
   }, [resendCountdown]);
 
+  // Runs when the user asks to resend the verification email.
   const handleResendEmail = async () => {
     if (!email) {
       toast.error("Please enter your email");
@@ -30,6 +35,7 @@ export default function VerifyEmailPage() {
 
     setLoading(true);
     try {
+      // Ask better-auth to send another verification link to this email.
       const { error } = await authClient.sendVerificationEmail({
         email,
         callbackURL: "/login",
@@ -42,6 +48,7 @@ export default function VerifyEmailPage() {
 
       toast.success("Verification email sent!");
       setSent(true);
+      // Start the cooldown so the user can't spam the resend button.
       setResendCountdown(RESEND_COOLDOWN_SECONDS);
     } finally {
       setLoading(false);
@@ -50,6 +57,7 @@ export default function VerifyEmailPage() {
 
   const canResend = resendCountdown === 0;
 
+  // Once an email has been sent, show a confirmation screen instead of the form.
   if (sent) {
     return (
       <div className="flex min-h-screen items-center justify-center px-4 bg-gray-50">

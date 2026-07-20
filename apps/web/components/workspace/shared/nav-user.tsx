@@ -28,8 +28,7 @@ import {
   SidebarMenuItem,
 } from "@repo/ui/components/sidebar";
 
-// Type defines shape of user data object
-
+// The shape of a user record as used by this component.
 export interface UserData {
   id: string;
   email: string | null;
@@ -39,24 +38,22 @@ export interface UserData {
   updatedAt: Date;
 }
 
-// Props accepted by this component
+// Props accepted by this component — mostly optional callbacks/toggles so this button can be reused in different parts of the app with different behavior.
 
 interface UserButtonProps {
-  onLogout?: () => void | Promise<void>; //callback for logout
+  onLogout?: () => void | Promise<void>;
 
-  // open settings, profile, billing handler
-
+  // Optional click handlers for extra dropdown items — the item only renders if its handler is provided.
   onSettings?: () => void;
   onProfile?: () => void;
   onBilling?: () => void;
 
-  // whether to show a small badge on avatar
   showBadge?: boolean;
-  badgeText?: string; // text inside badge
-  badgeVariant?: "default" | "secondary" | "destructive" | "outline"; // badge variant
-  size?: "sm" | "md" | "lg"; // avatar size
-  showEmail?: boolean; // whether to show user email in dropdown
-  showMemberSince?: boolean; // whether to show "member since" info
+  badgeText?: string;
+  badgeVariant?: "default" | "secondary" | "destructive" | "outline";
+  size?: "sm" | "md" | "lg";
+  showEmail?: boolean;
+  showMemberSince?: boolean;
 }
 
 export function NavUser({
@@ -70,18 +67,14 @@ export function NavUser({
   showEmail = true,
   showMemberSince = true,
 }: UserButtonProps) {
-  // loading state for logout button
-  const [isLoading] = useState(false);
 
-  // This hook allows you to programmatically change routes inside Client Component.
+  // Loading state for the logout button (never set to true currently — reserved for future use).
+  const [isLoading] = useState(false);
 
   const router = useRouter();
   const { data: session } = authClient.useSession();
 
-  // Actual sign out logic using your auth client , grab signOut function which comes from authClient
-
-  /// onSuccess : a callback function that will be called when a response is successful.
-
+  // Signs the user out via better-auth, then shows a toast and redirects to /login.
   const handleSignOut = async () => {
     await authClient.signOut({
       fetchOptions: {
@@ -96,8 +89,7 @@ export function NavUser({
     });
   };
 
-  // Get user initials for avatar fallback : If we don't get the avatar image ,  Generate initials for avatar fallback (e.g., "John Doe" → "JD")
-
+  // Builds initials to show when there's no avatar image, e.g. "John Doe" -> "JD".
   const getUserInitials = (name: string | null, email: string | null) => {
     if (name) {
       return name
@@ -113,7 +105,7 @@ export function NavUser({
     return "U"; // default
   };
 
-  // Format member since date
+  // Formats a date as "Month Year", e.g. "March 2025", for the "Member since" line.
   const formatMemberSince = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
       month: "long",
@@ -121,15 +113,14 @@ export function NavUser({
     }).format(new Date(date));
   };
 
-  // Predefined avatar sizes to keep design consistent
+  // Tailwind size classes for each `size` prop value.
   const avatarSizes = {
     sm: "h-8 w-8",
     md: "h-10 w-10",
     lg: "h-12 w-12",
   };
 
-  // If no user logged in, render nothing
-
+  // No logged-in user means there's nothing to show here.
   if (!session?.user) {
     return null;
   }
@@ -140,6 +131,7 @@ export function NavUser({
     <SidebarFooter>
       <SidebarMenu>
         <SidebarMenuItem>
+          {/* Clicking the avatar opens a dropdown with profile/settings/sign-out. */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button

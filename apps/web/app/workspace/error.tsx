@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
-import { WorkspaceHeader } from "../../components/workspace/workspace-header";
+import { WorkspaceHeader } from "../../components/workspace/shared/workspace-header";
 import { Button } from "@repo/ui/components/button";
 import { AlertCircle } from "lucide-react";
+
+// Next.js automatically shows this if anything throws while rendering the /workspace route, instead of crashing the whole app. `reset` retries rendering.
 
 export default function WorkspaceError({
   error,
@@ -12,6 +14,7 @@ export default function WorkspaceError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  // Log the error for debugging whenever a new one comes in.
   useEffect(() => {
     console.error(error);
   }, [error]);

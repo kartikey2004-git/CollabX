@@ -1,5 +1,7 @@
-import { WorkspaceHeader } from "../../components/workspace/workspace-header";
+import { WorkspaceHeader } from "../../components/workspace/shared/workspace-header";
 import { Skeleton } from "@repo/ui/components/skeleton";
+
+// Next.js automatically shows this while the /workspace route's data is loading, so the user sees a placeholder skeleton instead of a blank screen.
 
 export default function WorkspaceLoading() {
   return (
@@ -11,6 +13,7 @@ export default function WorkspaceLoading() {
           <Skeleton className="h-4 w-96" />
         </div>
 
+        {/* Placeholder cards standing in for whatever content is still loading. */}
         <div className="grid gap-4 md:grid-cols-3">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="rounded-lg border border-border bg-card p-6">

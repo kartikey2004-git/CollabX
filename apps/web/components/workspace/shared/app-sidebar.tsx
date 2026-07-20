@@ -10,6 +10,9 @@ import {
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
 
+// The main app sidebar which contain logo/header, navigation links, and the user menu at
+// the bottom. Shows a compact icon-only layout when collapsed.
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
@@ -18,6 +21,7 @@ export function AppSidebar() {
     <>
       <SidebarHeader>
         <div className="flex items-center justify-center rounded-lg px-2 py-1.5">
+          {/* Icon-only logo when collapsed, full logo + name when expanded. */}
           {isCollapsed ? (
             <Image
               src="/logo.svg"

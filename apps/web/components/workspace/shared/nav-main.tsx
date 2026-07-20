@@ -11,6 +11,8 @@ import {
   SidebarMenuButton,
 } from "@repo/ui/components/sidebar";
 
+// The sidebar's top-level navigation links. Currently just one entry, but structured as a list so more links can be added later.
+
 const mainMenuItems = [
   {
     id: "dashboard",
@@ -19,6 +21,8 @@ const mainMenuItems = [
     icon: LayoutDashboard,
   },
 ];
+
+// Renders the sidebar's main navigation section, highlighting whichever link matches the current URL.
 
 export function NavMain() {
   const pathname = usePathname();

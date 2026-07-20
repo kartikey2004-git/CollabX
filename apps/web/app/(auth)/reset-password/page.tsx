@@ -7,16 +7,24 @@ import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Card } from "@repo/ui/components/card";
 import { toast } from "sonner";
+import { resetPasswordSchema } from "../../../validation/auth-validation";
+import z from "zod";
+
+// Holds the actual form logic; wrapped in <Suspense> below because useSearchParams() needs that in Next.js.
 
 function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // The reset token comes from the link in the password-reset email, e.g. ?token=abc123.
   const token = searchParams.get("token");
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // If someone lands on this page without a token, the link is broken/expired — bounce them back to request a new one.
 
   useEffect(() => {
     if (!token) {
@@ -25,20 +33,30 @@ function ResetPasswordContent() {
     }
   }, [token, router]);
 
+  // Checks the new password + confirmation against resetPasswordSchema and fills `errors` with any field-specific problems. Returns true if valid.
+
   const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+    const result = resetPasswordSchema.safeParse({
+      password,
+      confirmPassword,
+    });
 
-    if (!password) newErrors.password = "Password is required";
-    if (password && password.length < 8) newErrors.password = "Password must be at least 8 characters";
+    if (!result.success) {
+      const { fieldErrors } = z.flattenError(result.error);
 
-    if (password !== confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
+      setErrors({
+        password: fieldErrors.password?.[0] ?? "",
+        confirmPassword: fieldErrors.confirmPassword?.[0] ?? "",
+      });
+
+      return false;
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors({});
+    return true;
   };
 
+  // Runs when the "reset password" form is submitted.
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -46,6 +64,7 @@ function ResetPasswordContent() {
 
     setLoading(true);
     try {
+      // Send the new password + the token from the email link to better-auth.
       const { error } = await authClient.resetPassword({
         newPassword: password,
         token,
@@ -63,6 +82,7 @@ function ResetPasswordContent() {
     }
   };
 
+  // While redirecting away (no token), render nothing instead of a broken form.
   if (!token) {
     return null;
   }
@@ -86,7 +106,7 @@ function ResetPasswordContent() {
                   setPassword(e.target.value);
                   setErrors((prev) => ({ ...prev, password: "" }));
                 }}
-                placeholder="••••••••"
+                placeholder="Enter your new password"
                 disabled={loading}
                 className={errors.password ? "border-red-500" : ""}
               />
@@ -131,9 +151,17 @@ function ResetPasswordContent() {
   );
 }
 
+// Wraps the page content in Suspense since reading the URL's search params (the reset token) requires it in Next.js's app router.
+
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
       <ResetPasswordContent />
     </Suspense>
   );

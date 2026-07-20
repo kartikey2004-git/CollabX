@@ -12,7 +12,9 @@
 		"@repo/auth": "*",
 		"@repo/database": "*",
 		"@repo/ui": "*",
+		"@repo/validation": "*",
 		"@tailwindcss/postcss": "^4.1.13",
+		"@tanstack/react-query": "^5.62.0",
 		"autoprefixer": "^10.4.21",
 		"better-auth": "^1.6.22",
 		"framer-motion": "^12.42.2",
@@ -20,7 +22,8 @@
 		"next": "^14.1.1",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
-		"sonner": "^1.6.3"
+		"sonner": "^1.6.3",
+		"zod": "^4.4.3"
 	},
 	"devDependencies": {
 		"@next/eslint-plugin-next": "^14.1.1",

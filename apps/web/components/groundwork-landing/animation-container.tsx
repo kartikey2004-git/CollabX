@@ -3,14 +3,6 @@
 import { motion } from "framer-motion";
 import { Path, PATHS } from "../../lib/landing-data";
 
-export const Demo = () => {
-  return (
-    <section className="relative min-h-screen w-full overflow-hidden bg-white">
-      <AnimationContainer />
-    </section>
-  );
-};
-
 export const AnimationContainer = () => {
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 mx-auto max-w-[734px]">

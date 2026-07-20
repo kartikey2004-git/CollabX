@@ -1,5 +1,8 @@
-import { SidebarProvider, Sidebar, SidebarInset } from "@repo/ui/components/sidebar";
-import { AppSidebar } from "../../components/workspace/app-sidebar";
+import { SidebarProvider } from "@repo/ui/components/sidebar";
+import { QueryProvider } from "../../lib/query-client";
+import { Toaster } from "@repo/ui/components/sonner";
+
+// The top-level layout for everything under /workspace. Wraps all child pages with the data-fetching provider, the sidebar's open/closed state, and toast notifications.
 
 export default function WorkspaceLayout({
   children,
@@ -7,11 +10,11 @@ export default function WorkspaceLayout({
   children: React.ReactNode;
 }) {
   return (
-    <SidebarProvider defaultOpen={true}>
-      <Sidebar collapsible="icon">
-        <AppSidebar />
-      </Sidebar>
-      <SidebarInset>{children}</SidebarInset>
-    </SidebarProvider>
+    <QueryProvider>
+      <SidebarProvider defaultOpen={true}>
+        {children}
+        <Toaster richColors />
+      </SidebarProvider>
+    </QueryProvider>
   );
 }
