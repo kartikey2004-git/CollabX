@@ -8,25 +8,18 @@ import type {
 import { workspaceRepository } from "../repositories/workspace.repository";
 import { workspaceMemberRepository } from "../repositories/workspace-member.repository";
 
-// This is where the "business logic" for workspaces lives — it sits between the controller (handles HTTP) and the repository (talks to the database).
-
 export const workspaceService = {
-
-  // Create a new workspace and make its creator an ADMIN member, in one step.
+  // Create a new workspace and make its creator an ADMIN member
   create(userId: string, input: CreateWorkspaceInput): Promise<Workspace> {
-
     // Wrap these database operations in a single transaction to ensure consistency: either both the workspace and the membership are created, or neither is.
 
     return db.$transaction(async (tx) => {
-
       // Create a workspace using the provided name and owner ID
-      const workspace = await workspaceRepository.create(
-        { name: input.name, ownerId: userId },
-        tx,
-      );
+      const workspace = await workspaceRepository.create({ name: input.name, ownerId: userId }, tx);
 
       // Creator is inserted as ADMIN so they immediately pass RBAC on their own workspace.
       await workspaceMemberRepository.create(workspace.id, userId, "ADMIN", tx);
+
       return workspace;
     });
   },
@@ -38,7 +31,6 @@ export const workspaceService = {
 
   // Permanently delete a workspace and everything inside it.
   delete(workspaceId: string): Promise<Workspace> {
-
     // Hard delete — Workspace has no deletedAt column; every child FK (WorkspaceMember, Project, Artifact, ...) is onDelete: Cascade, so Postgres removes the whole subtree in this one statement.
 
     return workspaceRepository.hardDelete(workspaceId);

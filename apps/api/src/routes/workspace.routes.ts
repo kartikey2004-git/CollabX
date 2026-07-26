@@ -17,7 +17,7 @@ import { workspaceController } from "../controllers/workspace.controller";
 
 const router = Router();
 
-// POST /workspaces — create a new workspace. Must be logged in; rate-limited since it's a "write" action; body is validated against createWorkspaceSchema.
+// POST /workspaces — create a new workspace. User must be logged in; rate limited since it's a "write" action; body is validated against createWorkspaceSchema.
 
 router.post(
   "/",

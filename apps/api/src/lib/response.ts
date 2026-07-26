@@ -1,6 +1,6 @@
 import { Response } from "express";
 
-// Extra info sent alongside list responses, so the frontend knows how to fetch the next page.
+// Extra information sent alongside list responses, so the frontend knows how to fetch the next page.
 export interface ListMeta {
   nextCursor: string | null;
   hasMore: boolean;

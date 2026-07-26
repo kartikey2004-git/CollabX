@@ -6,4 +6,3 @@ const HealthRouter = Router();
 HealthRouter.get("/health", healthCheck);
 
 export default HealthRouter;
-

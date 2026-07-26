@@ -1,13 +1,14 @@
 import { Router } from "express";
 import workspaceRouter from "./workspace.routes";
+import workspaceMemberRouter from "./workspace-member.routes";
 import { directProjectRouter, nestedProjectRouter } from "./project.routes";
 import { directArtifactRouter, nestedArtifactRouter } from "./artifact.routes";
 
-// Together all the individual route files into one router, mounting each at the URL path where it should live.
-
+// Combines all route modules into a single router, mounting each one at its appropriate URL path.
 const router = Router();
 
 router.use("/workspaces", workspaceRouter);
+router.use("/workspaces/:workspaceId/members", workspaceMemberRouter);
 router.use("/workspaces/:workspaceId/projects", nestedProjectRouter);
 router.use("/projects", directProjectRouter);
 router.use("/projects/:projectId/artifacts", nestedArtifactRouter);

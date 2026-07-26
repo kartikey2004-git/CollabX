@@ -12,23 +12,22 @@ const start = async () => {
     app.listen(port, () => {
       logger.info(`Server running at http://localhost:${port}`);
     });
-
   } catch (error) {
     // If startup fails for any reason, log it and exit instead of hanging.
-    logger.error({ error }, 'Error starting server');
+    logger.error({ error }, "Error starting server");
     process.exit(1);
   }
 };
 
 // Handle Ctrl+C (SIGINT) so the server shuts down cleanly instead of just being killed.
-process.on('SIGINT', () => {
-  logger.info('Stopping server (SIGINT)...');
+process.on("SIGINT", () => {
+  logger.info("Stopping server (SIGINT)...");
   process.exit(0);
 });
 
 // Handle SIGTERM (e.g. sent by Docker/hosting platforms when stopping the app).
-process.on('SIGTERM', () => {
-  logger.info('Stopping server (SIGTERM)...');
+process.on("SIGTERM", () => {
+  logger.info("Stopping server (SIGTERM)...");
   process.exit(0);
 });
 

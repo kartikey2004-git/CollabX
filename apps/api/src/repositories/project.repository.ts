@@ -1,10 +1,6 @@
 import db from "@repo/database";
 import type { Prisma, Project } from "@repo/database";
-import {
-  buildKeysetWhere,
-  decodeCursor,
-  paginateResults,
-} from "../lib/pagination";
+import { buildKeysetWhere, decodeCursor, paginateResults } from "../lib/pagination";
 
 // Which fields a project list can be sorted by.
 export type ProjectSortField = "createdAt" | "updatedAt" | "name";
@@ -21,10 +17,7 @@ export interface ListProjectsParams {
 
 type Db = typeof db | Prisma.TransactionClient;
 
-// projectRepository object is the only place that talks directly to the "Project" table in the database. Controllers/services call these functions instead of writing raw Prisma queries themselves.
-
 export const projectRepository = {
-  
   // Insert a new project row into the database.
   create(data: {
     name: string;
@@ -44,7 +37,7 @@ export const projectRepository = {
     return db.project.update({ where: { id }, data });
   },
 
-  // "Delete" a project without actually removing the row — just mark it as deleted by setting deletedAt, so it can potentially be restored later.
+  // "Delete" a project without actually removing the row by just marking it as deleted by setting deletedAt, so it can potentially be restored later.
   softDelete(id: string, client: Db = db): Promise<Project> {
     return client.project.update({
       where: { id },
@@ -63,39 +56,38 @@ export const projectRepository = {
       where: { id, deletedAt: null },
       select: { workspaceId: true },
     });
+
     return project?.workspaceId ?? null;
   },
 
   // true/false check for whether a (non-deleted) project exists.
   async exists(id: string): Promise<boolean> {
     const count = await db.project.count({ where: { id, deletedAt: null } });
+
     return count > 0;
   },
 
   // Get one page of projects belonging to a workspace, with cursor-based pagination.
   async findByWorkspace(params: ListProjectsParams) {
-
     // Turn the incoming cursor string (if any) back into a usable value.
     const cursor = params.cursor ? decodeCursor(params.cursor) : undefined;
-    
+
     // Build the "give me rows after this cursor" filter.
-    const keysetWhere = buildKeysetWhere(
-      params.sortBy,
-      params.sortOrder,
-      cursor,
-    );
+    const keysetWhere = buildKeysetWhere(params.sortBy, params.sortOrder, cursor);
 
     // Only look at projects in this workspace that aren't soft-deleted.
     const where = {
-      workspaceId: params.workspaceId,
-      deletedAt: null,
-      ...(keysetWhere ?? {}),
+      workspaceId: params.workspaceId, // Filter by workspace
+      deletedAt: null, // Filter out soft-deleted projects
+
+      ...(keysetWhere ?? {}), // Add cursor-based filtering
     } as Prisma.ProjectWhereInput;
 
     // Sort by the requested field, breaking ties by id for stable pagination.
     const orderBy = [
-      { [params.sortBy]: params.sortOrder },
-      { id: params.sortOrder },
+      { [params.sortBy]: params.sortOrder }, // Sort by the requested field
+
+      { id: params.sortOrder }, // Break ties by id for stable pagination
     ] as Prisma.ProjectOrderByWithRelationInput[];
 
     // Fetch one extra row beyond the limit so we can tell if there's a next page.

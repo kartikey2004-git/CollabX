@@ -57,23 +57,23 @@ Copy the example file:
 cp .env.example .env
 ```
 
-| Variable | Required | Default | Description |
-| --- | --- | --- | --- |
-| `DATABASE_URL` | Yes | — | PostgreSQL connection string (same as `packages/database/.env`) |
-| `PORT` | No | `4000` | HTTP port |
-| `NODE_ENV` | No | `development` | Runtime environment |
-| `LOG_LEVEL` | No | `info` | Pino log level (`debug`, `info`, `warn`, `error`) |
+| Variable       | Required | Default       | Description                                                     |
+| -------------- | -------- | ------------- | --------------------------------------------------------------- |
+| `DATABASE_URL` | Yes      | —             | PostgreSQL connection string (same as `packages/database/.env`) |
+| `PORT`         | No       | `4000`        | HTTP port                                                       |
+| `NODE_ENV`     | No       | `development` | Runtime environment                                             |
+| `LOG_LEVEL`    | No       | `info`        | Pino log level (`debug`, `info`, `warn`, `error`)               |
 
 `dotenv` loads `.env` from this directory (`apps/api/`) at startup.
 
 ## Available Scripts
 
-| Script | Description |
-| --- | --- |
-| `npm run dev` | Start dev server with `tsx watch` |
-| `npm run build` | Compile TypeScript to `dist/` |
-| `npm run start` | Run compiled `dist/server.js` |
-| `npm run check-types` | Type-check without emitting |
+| Script                | Description                       |
+| --------------------- | --------------------------------- |
+| `npm run dev`         | Start dev server with `tsx watch` |
+| `npm run build`       | Compile TypeScript to `dist/`     |
+| `npm run start`       | Run compiled `dist/server.js`     |
+| `npm run check-types` | Type-check without emitting       |
 
 ## Important Notes
 
@@ -83,17 +83,17 @@ cp .env.example .env
 
 ## Expected Ports
 
-| Mode | Port |
-| --- | --- |
-| Development | `4000` |
-| Production | `4000` (override with `PORT` env var) |
+| Mode        | Port                                  |
+| ----------- | ------------------------------------- |
+| Development | `4000`                                |
+| Production  | `4000` (override with `PORT` env var) |
 
 ## API Endpoints
 
-| Method | Path | Description |
-| --- | --- | --- |
-| `GET` | `/api/health` | Health check |
-| `GET` | `/api/users` | List all users from the database |
+| Method | Path          | Description                      |
+| ------ | ------------- | -------------------------------- |
+| `GET`  | `/api/health` | Health check                     |
+| `GET`  | `/api/users`  | List all users from the database |
 
 ### Health check example
 
@@ -111,10 +111,10 @@ curl http://localhost:4000/api/health
 
 ## Connections to Other Packages
 
-| Package | Usage |
-| --- | --- |
-| `@repo/database` | Prisma client for database queries |
-| `@repo/typescript-config` | `node.json` tsconfig preset |
+| Package                   | Usage                              |
+| ------------------------- | ---------------------------------- |
+| `@repo/database`          | Prisma client for database queries |
+| `@repo/typescript-config` | `node.json` tsconfig preset        |
 
 ## Example Database Query
 

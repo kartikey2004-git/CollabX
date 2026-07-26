@@ -1,40 +1,45 @@
 {
-	"name": "api",
-	"version": "1.0.0",
-	"type": "commonjs",
-	"description": "",
-	"main": "server.ts",
-	"scripts": {
-		"dev": "tsx watch src/server.ts",
-		"build": "tsc -p tsconfig.json",
-		"start": "node dist/server.js",
-		"check-types": "tsc --noEmit"
-	},
-	"keywords": [],
-	"author": "",
-	"license": "ISC",
-	"dependencies": {
-		"@repo/database": "*",
-		"@repo/validation": "*",
-		"better-auth": "^1.6.22",
-		"bottleneck": "^2.19.5",
-		"cors": "^2.8.6",
-		"dotenv": "^16.0.3",
-		"express": "^5.1.0",
-		"express-rate-limit": "^7.5.0",
-		"morgan": "^1.11.0",
-		"pino": "^10.3.1",
-		"pino-http": "^11.0.0",
-		"resend": "^6.17.2",
-		"zod": "^4.4.3"
-	},
-	"devDependencies": {
-		"@types/cors": "^2.8.19",
-		"@types/express": "^5.0.6",
-		"@types/morgan": "^1.9.10",
-		"@types/node": "^20.19.13",
-		"concurrently": "^9.2.1",
-		"tsx": "^4.22.4",
-		"typescript": "^5.9.2"
-	}
+  "name": "api",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "description": "",
+  "main": "server.ts",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "check-types": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1091.0",
+    "@repo/database": "*",
+    "@repo/validation": "*",
+    "better-auth": "^1.6.22",
+    "bottleneck": "^2.19.5",
+    "cors": "^2.8.6",
+    "dotenv": "^16.0.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
+    "morgan": "^1.11.0",
+    "multer": "^2.2.0",
+    "pino": "^10.3.1",
+    "pino-http": "^11.0.0",
+    "resend": "^6.17.2",
+    "sanitize-html": "^2.17.6",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/morgan": "^1.9.10",
+    "@types/multer": "^2.2.0",
+    "@types/node": "^20.19.13",
+    "@types/sanitize-html": "^2.16.1",
+    "concurrently": "^9.2.1",
+    "tsx": "^4.22.4",
+    "typescript": "^5.9.2"
+  }
 }

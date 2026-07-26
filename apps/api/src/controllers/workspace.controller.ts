@@ -7,15 +7,10 @@ import type {
 import { workspaceService } from "../services/workspace.service";
 import { sendSuccess } from "../lib/response";
 
-// workspaceController object groups together all the functions (handlers) that respond to workspace-related HTTP requests, like creating, listing, updating, deleting
-
 export const workspaceController = {
-
-  // Handles "create a new workspace" requests (usually a POST request)
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-
-      // Grab the data the user sent in the request body (name)
+      // Grab the data the user sent in the request body which is name of the workspace
       const input = req.body as CreateWorkspaceInput;
 
       // Ask the service layer to actually create the workspace in the database, linking it to the currently logged-in user (req.user!.id)
@@ -24,23 +19,17 @@ export const workspaceController = {
       // Send back the newly created workspace with a 201 "Created" status
       sendSuccess(res, workspace, { status: 201 });
     } catch (err) {
-      // If anything goes wrong, pass the error to Express's error handler.
-      next(err);
+      next(err); // If anything goes wrong, pass the error to Express's error handler.
     }
   },
 
-  // Handles "get a list of workspaces" requests (usually a GET request)
   async list(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-
-      // Grab query params like page size or cursor which is used for pagination
+      // Grab query params like limit, sortBy, sortOrder and cursor which is used for pagination
       const query = req.query as unknown as ListWorkspacesQuery;
 
       // Ask the service layer for the getting workspaces belonging to this user, along with pagination info (nextCursor, hasMore)
-      const { items, nextCursor, hasMore } = await workspaceService.list(
-        req.user!.id,
-        query,
-      );
+      const { items, nextCursor, hasMore } = await workspaceService.list(req.user!.id, query);
 
       // Send back the list of workspaces plus pagination details
       sendSuccess(res, items, { meta: { nextCursor, hasMore } });
@@ -49,7 +38,6 @@ export const workspaceController = {
     }
   },
 
-  // Handles "update an existing workspace" requests (usually a PATCH/PUT request)
   async update(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       // Get the workspace's id from the URL (e.g. /workspaces/:id)
@@ -68,7 +56,6 @@ export const workspaceController = {
     }
   },
 
-  // Handles "delete a workspace" requests (usually a DELETE request).
   async remove(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       // Get the workspace's id from the URL params.
@@ -76,6 +63,8 @@ export const workspaceController = {
 
       // Ask the service layer to delete the workspace from the database.
       const workspace = await workspaceService.delete(id);
+
+      // Send back the deleted workspace
       sendSuccess(res, workspace);
     } catch (err) {
       next(err);

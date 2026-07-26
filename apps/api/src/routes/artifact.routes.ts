@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  artifactVersionParamSchema,
   createArtifactSchema,
   idParamSchema,
   listArtifactsQuerySchema,
@@ -15,14 +16,24 @@ import {
   WRITE_ROLES,
 } from "../middleware/rbac.middleware";
 import { validate } from "../middleware/validate.middleware";
-import { mutationRateLimiter } from "../middleware/rate-limit.middleware";
+import { mutationRateLimiter, uploadRateLimiter } from "../middleware/rate-limit.middleware";
+import { imageUpload } from "../middleware/upload.middleware";
 import { artifactController } from "../controllers/artifact.controller";
+import { versionController } from "../controllers/version.controller";
+import { imageController } from "../controllers/image.controller";
 
-// Mounted twice in v1.routes.ts: once under /projects/:projectId/artifacts (create/list) and once under /artifacts (get/update/delete by direct id).
+/* 
 
-const nestedRouter = Router({ mergeParams: true }); // used for nested routes
+Mounted in two places:
 
-// POST /projects/:projectId/artifacts — create an artifact inside a project. which requires ADMIN or EDITOR role in the project's workspace.
+- /projects/:projectId/artifacts for create/list operations.
+- /artifacts for get, update, and delete operations by artifact ID.
+
+*/
+
+const nestedRouter = Router({ mergeParams: true }); // used for nested routes like /projects/:projectId/artifacts/...
+
+// POST /projects/:projectId/artifacts — create an artifact inside a project which requires ADMIN or EDITOR role in the project's workspace.
 
 nestedRouter.post(
   "/",
@@ -43,7 +54,7 @@ nestedRouter.get(
   artifactController.list,
 );
 
-const directRouter = Router(); // used for direct routes
+const directRouter = Router(); // used for direct routes like /artifacts/...
 
 // GET /artifacts/:id — fetch one artifact directly by its id which resolves the parent workspace from the artifact, then requires membership (any role).
 
@@ -56,6 +67,7 @@ directRouter.get(
 );
 
 // PATCH /artifacts/:id — update an artifact directly by its id. Requires write access.
+
 directRouter.patch(
   "/:id",
   mutationRateLimiter,
@@ -66,6 +78,7 @@ directRouter.patch(
 );
 
 // DELETE /artifacts/:id — delete an artifact directly by its id. Requires write access.
+
 directRouter.delete(
   "/:id",
   mutationRateLimiter,
@@ -73,6 +86,65 @@ directRouter.delete(
   requireWorkspaceRole(WRITE_ROLES, resolveWorkspaceIdFromArtifactParam("id")),
   validate({ params: idParamSchema }),
   artifactController.remove,
+);
+
+// GET /artifacts/:id/parent — the artifact's parent (or null, if it's a root artifact). Any workspace member can view.
+
+directRouter.get(
+  "/:id/parent",
+  requireAuth,
+  requireWorkspaceRole(ALL_ROLES, resolveWorkspaceIdFromArtifactParam("id")),
+  validate({ params: idParamSchema }),
+  artifactController.getParent,
+);
+
+// GET /artifacts/:id/children — the artifact's direct children. Any workspace member can view.
+
+directRouter.get(
+  "/:id/children",
+  requireAuth,
+  requireWorkspaceRole(ALL_ROLES, resolveWorkspaceIdFromArtifactParam("id")),
+  validate({ params: idParamSchema }),
+  artifactController.getChildren,
+);
+
+// GET /artifacts/:id/versions — the artifact's version history, newest first. Any workspace member can view.
+
+directRouter.get(
+  "/:id/versions",
+  requireAuth,
+  requireWorkspaceRole(ALL_ROLES, resolveWorkspaceIdFromArtifactParam("id")),
+  validate({ params: idParamSchema }),
+  versionController.list,
+);
+
+// POST /artifacts/:id/versions/:versionId/restore — Restores an older version by replacing the artifact's current content. Requires write access since this modifies the artifact.
+
+directRouter.post(
+  "/:id/versions/:versionId/restore",
+  mutationRateLimiter,
+  requireAuth,
+  requireWorkspaceRole(WRITE_ROLES, resolveWorkspaceIdFromArtifactParam("id")),
+  validate({ params: artifactVersionParamSchema }),
+  versionController.restore,
+);
+
+/*
+
+ -  POST /artifacts/:id/upload-image — uploads an image for inline use in a Markdown artifact. Requires write access since it modifies the artifact's content.
+
+ - The `imageUpload` (multer) middleware parses the multipart/form-data request and makes the uploaded file available as `req.file` before the controller runs. This middleware is applied only to this route because every other endpoint in the API accepts JSON requests, not multipart form data.
+
+*/
+
+directRouter.post(
+  "/:id/upload-image",
+  uploadRateLimiter,
+  requireAuth,
+  requireWorkspaceRole(WRITE_ROLES, resolveWorkspaceIdFromArtifactParam("id")),
+  validate({ params: idParamSchema }),
+  imageUpload,
+  imageController.upload,
 );
 
 export { nestedRouter as nestedArtifactRouter, directRouter as directArtifactRouter };

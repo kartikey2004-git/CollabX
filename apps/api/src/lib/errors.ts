@@ -5,31 +5,30 @@ export type ErrorCode =
   | "FORBIDDEN"
   | "NOT_FOUND"
   | "CONFLICT"
+  | "PAYLOAD_TOO_LARGE"
+  | "UNSUPPORTED_MEDIA_TYPE"
   | "INTERNAL_ERROR";
 
-// Describes one specific problem, e.g. which field failed and why.
+// Describes one specific problem, which field failed and why.
 export interface ErrorDetail {
-  path: string;
-  message: string;
+  path: string; // Path to the field that failed validation
+  message: string; // Error message
 }
 
-// A custom error type that carries extra info (HTTP status, error code) on top of a normal JavaScript Error, so our error handler knows how to respond.
+// A custom error type that carries extra info (HTTP status, error code) on top of a normal javascript Error, so our error handler knows how to respond.
 
 export class AppError extends Error {
   readonly statusCode: number;
   readonly code: ErrorCode;
   readonly details?: ErrorDetail[];
 
-  constructor(
-    message: string,
-    statusCode: number,
-    code: ErrorCode,
-    details?: ErrorDetail[],
-  ) {
-    super(message);
+  constructor(message: string, statusCode: number, code: ErrorCode, details?: ErrorDetail[]) {
+    super(message); // super is used to call the constructor of the parent class (Error).
 
     // Use the actual subclass name (e.g. "NotFoundError") instead of just "Error".
-    this.name = new.target.name;
+
+    this.name = new.target.name; // new.target is a special keyword that tells you which constructor was called using the new keyword.
+
     this.statusCode = statusCode;
     this.code = code;
     this.details = details;
@@ -71,5 +70,19 @@ export class NotFoundError extends AppError {
 export class ConflictError extends AppError {
   constructor(message = "A conflicting resource already exists") {
     super(message, 409, "CONFLICT");
+  }
+}
+
+// Thrown when an uploaded file exceeds the allowed size limit. Maps to HTTP 413.
+export class PayloadTooLargeError extends AppError {
+  constructor(message = "The uploaded file is too large") {
+    super(message, 413, "PAYLOAD_TOO_LARGE");
+  }
+}
+
+// Thrown when an uploaded file's type isn't on the allowlist. Maps to HTTP 415.
+export class UnsupportedMediaTypeError extends AppError {
+  constructor(message = "Unsupported file type") {
+    super(message, 415, "UNSUPPORTED_MEDIA_TYPE");
   }
 }

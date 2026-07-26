@@ -6,8 +6,7 @@ import type { WorkspaceRole } from "@repo/database";
 declare global {
   namespace Express {
     interface Request {
-
-      // Set by `auth.middleware.ts` after a valid session is confirmed. 
+      // Set by `auth.middleware.ts` after a valid session is confirmed.
       user?: AuthSession["user"];
       session?: AuthSession["session"];
 

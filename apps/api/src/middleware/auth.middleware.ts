@@ -5,11 +5,7 @@ import { UnauthenticatedError } from "../lib/errors";
 
 // A middleware that runs before protected routes to make sure the request comes from a logged-in user. If not, it blocks the request with an error.
 
-export async function requireAuth(
-  req: Request,
-  _res: Response,
-  next: NextFunction,
-): Promise<void> {
+export async function requireAuth(req: Request, _res: Response, next: NextFunction): Promise<void> {
   try {
     // Ask better-auth to look at the request's cookies/headers and find an active session.
     const result = await auth.api.getSession({
@@ -21,7 +17,7 @@ export async function requireAuth(
       throw new UnauthenticatedError();
     }
 
-    // Attach the logged-in user and session to the request so later code can use them.
+    // if session is found, attach the logged-in user and session to the request so later code can use them.
     req.user = result.user;
     req.session = result.session;
     next();

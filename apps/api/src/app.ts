@@ -47,7 +47,7 @@ app.use(
   }),
 );
 
-app.use(pinoHttp({ logger })) // logger middleware
+app.use(pinoHttp({ logger })); // logger middleware
 
 // Better Auth's handler must be mounted before the body parsers below , it reads the raw request body itself. Express 5's router (path-to-regexp v7+) requires a named wildcard instead of the bare Express 4 "*".
 

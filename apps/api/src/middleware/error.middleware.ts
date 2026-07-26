@@ -1,18 +1,18 @@
 import { NextFunction, Request, Response } from "express";
+import multer from "multer";
 import { Prisma } from "@repo/database";
 import logger from "../config/logger";
 import { AppError } from "../lib/errors";
 
-// Express's central error handler — every "next(err)" call in the app ends up here, and this function decides what status/JSON to send back.
+// Express's central error handler — every "next(err)" call in the app ends up here, and this function decides what status and JSON to send back.
 
 export function errorMiddleware(
   err: unknown,
-  req: Request,
+  _req: Request,
   res: Response,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  next: NextFunction,
+  _next: NextFunction,
 ): void {
-  // If we threw one of our own custom errors, use the status/code/message it already carries.
+  // If the error is one of our custom errors, use the status code and message it already provides.
   if (err instanceof AppError) {
     res.status(err.statusCode).json({
       success: false,
@@ -25,10 +25,21 @@ export function errorMiddleware(
     return;
   }
 
-  // Translate specific known Prisma (database) error codes into friendly API responses.
-  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+  // Multer returns its own file size error format; convert it to our standard 413 API error response.
+  if (err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE") {
+    res.status(413).json({
+      success: false,
+      error: {
+        code: "PAYLOAD_TOO_LARGE",
+        message: "The uploaded file is too large",
+      },
+    });
+    return;
+  }
 
-    // P2002 = tried to insert a duplicate value where uniqueness is required.
+  // Translate known database errors from Prisma into user-friendly API responses.
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    // P2002: tried to insert a duplicate value where uniqueness is required.
     if (err.code === "P2002") {
       res.status(409).json({
         success: false,
@@ -40,7 +51,7 @@ export function errorMiddleware(
       return;
     }
 
-    // P2025 = tried to update/delete a record that doesn't exist.
+    // P2025: tried to update/delete a record that doesn't exist.
     if (err.code === "P2025") {
       res.status(404).json({
         success: false,
@@ -49,7 +60,7 @@ export function errorMiddleware(
       return;
     }
 
-    // P2003 = violated a foreign key relationship (e.g. linked record still in use).
+    // P2003: violated a foreign key relationship (e.g. linked record still in use).
     if (err.code === "P2003") {
       res.status(409).json({
         success: false,

@@ -18,11 +18,18 @@ import { validate } from "../middleware/validate.middleware";
 import { mutationRateLimiter } from "../middleware/rate-limit.middleware";
 import { projectController } from "../controllers/project.controller";
 
-// Mounted twice in v1.routes.ts: once under /workspaces/:workspaceId/projects (create/list) and once under /projects (update/delete by direct id).
+/*
 
-const nestedRouter = Router({ mergeParams: true }); // used for nested routes
+Mounted in two places:
 
-// POST /workspaces/:workspaceId/projects — create a project inside a workspace. which requires ADMIN or EDITOR role in that workspace.
+  - /workspaces/:workspaceId/projects for creating and listing projects.
+  - /projects for updating and deleting a project by ID.
+
+*/
+
+const nestedRouter = Router({ mergeParams: true }); // used for nested routes like /workspaces/:workspaceId/projects/...
+
+// POST /workspaces/:workspaceId/projects — create a project inside a workspace which requires ADMIN or EDITOR role in that workspace.
 
 nestedRouter.post(
   "/",
@@ -43,7 +50,7 @@ nestedRouter.get(
   projectController.list,
 );
 
-const directRouter = Router();
+const directRouter = Router(); // used for direct routes like /projects/...
 
 // PATCH /projects/:id — update a project directly by its id. Resolves the parent workspace from the project, then requires write access.
 

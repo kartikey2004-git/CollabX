@@ -3,10 +3,12 @@ import { config } from "../config";
 import logger from "../config/logger";
 
 // Sets up the Resend client (a third-party service for sending emails) using API key.
+
 const resend = new Resend(config.resendApiKey);
 const FROM_EMAIL = config.resendFromEmail; // email id from which email will be sent
 
-// Sends a "verify your email" message to a new user after they sign up.
+// Sends a verify your email message to a new user after they sign up.
+
 export async function sendVerificationEmail({
   email,
   verificationUrl,
@@ -45,12 +47,13 @@ export async function sendVerificationEmail({
       `,
     });
   } catch (error) {
-    // If sending fails, just log it instead of crashing , the user can request a new link later.
+    // If sending fails, just log it instead of crashing, the user can request a new link later.
     logger.error({ email, error }, "Verification email failed");
   }
 }
 
-// Sends a "reset your password" message when a user requests a password reset.
+// Sends a reset your password message when a user requests a password reset.
+
 export async function sendPasswordResetEmail({
   email,
   resetUrl,

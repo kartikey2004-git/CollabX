@@ -9,7 +9,7 @@ interface ValidateSchemas {
   query?: ZodType;
 }
 
-// A middleware factory: give it Zod schemas for params/query/body, and it returns a middleware that checks the incoming request against them before letting the route handler run.
+// A middleware factory which gives Zod schemas for params/query/body, and it returns a middleware that checks the incoming request against them before letting the route handler run.
 
 export function validate(schemas: ValidateSchemas) {
   return (req: Request, _res: Response, next: NextFunction): void => {
@@ -18,8 +18,9 @@ export function validate(schemas: ValidateSchemas) {
     // Validate URL params (e.g. :id) if a schema was given for them.
     if (schemas.params) {
       const result = schemas.params.safeParse(req.params);
+
       if (result.success) {
-        Object.assign(req.params, result.data);
+        Object.assign(req.params, result.data); // Assigns the validated properties from result.data to req.params.
       } else {
         details.push(...toErrorDetails("params", result.error));
       }
@@ -28,17 +29,23 @@ export function validate(schemas: ValidateSchemas) {
     // Validate query string params (e.g. ?limit=10) if a schema was given for them.
     if (schemas.query) {
       const result = schemas.query.safeParse(req.query);
+
       if (result.success) {
-
-        // Express 5's `req.query` is a getter that re-parses the raw query string on every access (it does not cache), so mutating the object it returns is silently discarded. Replace the getter with a plain value so downstream reads see the validated/coerced data.
-
-        // Express 5 ignores direct edits to `req.query`. So, overwriting it with a plain object ensures the rest of the app sees our validated data.
+        /*
+        
+        - Express 5's `req.query` is a getter that re-parses the raw query string on every access (it does not cache), so mutating the object it returns is silently discarded. Replace the getter with a plain value so downstream reads see the validated/coerced data.
+        
+        - Express 5 ignores direct edits to `req.query`. So, overwriting it with a plain object ensures the rest of the app sees our validated data.
+        
+        */
 
         Object.defineProperty(req, "query", {
-          value: result.data,
-          writable: true, 
-          configurable: true,
-          enumerable: true,
+          value: result.data, // Assigns the validated properties from result.data to req.query.
+
+          writable: true, // Allows req.query to be reassigned.
+          configurable: true, // Allows the property to be redefined or deleted.
+
+          enumerable: true, // Allows req.query to be iterated over.
         });
       } else {
         details.push(...toErrorDetails("query", result.error));
@@ -49,7 +56,7 @@ export function validate(schemas: ValidateSchemas) {
     if (schemas.body) {
       const result = schemas.body.safeParse(req.body);
       if (result.success) {
-        req.body = result.data;
+        req.body = result.data; // Assigns the validated properties from result.data to req.body.
       } else {
         details.push(...toErrorDetails("body", result.error));
       }
