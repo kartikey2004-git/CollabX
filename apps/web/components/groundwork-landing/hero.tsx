@@ -20,7 +20,7 @@ export function Hero() {
       <div className="relative z-10 w-full px-4 text-center sm:px-6 lg:px-10">
         <div className="w-full text-center">
           <div className="mb-7">
-            <span className="inline-flex items-center bg-[#dfeaf5] px-5 py-2 text-[12px] font-medium uppercase tracking-[0.22em] text-[#0A66C2]">
+            <span className="inline-flex items-center bg-[#dcfce7] px-5 py-2 text-[12px] font-medium uppercase tracking-[0.22em] text-[#047857]">
               FOR ARCHITECTS, LEADS & ENGINEERING TEAMS
             </span>
           </div>
@@ -30,7 +30,7 @@ export function Hero() {
             <br />
             into an AI Architect You Can
             <br />
-            <span className="text-[#0A66C2]">Actually</span> Trust
+            <span className="text-[#047857]">Actually</span> Trust
           </h1>
 
           <p className="mx-auto mt-7 max-w-190 text-[18px] leading-[1.3] text-[#666666] md:text-[20px]">

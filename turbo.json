@@ -27,6 +27,11 @@
 			"cache": false,
 			"persistent": true
 		},
+		"worker": {
+			"dependsOn": ["^build", "^db:generate"],
+			"cache": false,
+			"persistent": true
+		},
 		"lint": {}
 	}
 }

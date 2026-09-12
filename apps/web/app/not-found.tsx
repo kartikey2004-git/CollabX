@@ -38,10 +38,10 @@ export default function NotFound() {
           Back to home
         </Link>
         <Link
-          href="/workspace"
+          href="/articles"
           className="border border-slate-300 px-6 py-2.5 text-sm font-medium text-black transition-colors hover:border-black"
         >
-          Go to Workspace
+          Go to Articles
         </Link>
       </div>
     </div>

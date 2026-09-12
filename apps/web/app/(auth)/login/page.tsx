@@ -58,7 +58,7 @@ export default function LoginPage() {
       }
 
       toast.success("Logged in successfully!");
-      router.push("/workspace");
+      router.push("/articles");
     } finally {
       setLoading(false);
     }
@@ -69,7 +69,7 @@ export default function LoginPage() {
     const { error } = await authClient.signIn.social({
       provider: "google",
       callbackURL: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
-        }/workspace`,
+        }/articles`,
     });
     if (error) toast.error(error.message || "Google sign-in failed");
   };
@@ -79,7 +79,7 @@ export default function LoginPage() {
     const { error } = await authClient.signIn.social({
       provider: "github",
       callbackURL: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
-        }/workspace`,
+        }/articles`,
     });
     if (error) toast.error(error.message || "GitHub sign-in failed");
   };

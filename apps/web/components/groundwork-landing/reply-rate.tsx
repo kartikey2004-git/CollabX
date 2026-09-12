@@ -17,7 +17,7 @@ export default function ReplyRateSection() {
 
       <div className="relative w-full border border-zinc-200 bg-[#f8f8f8] p-14 md:p-20 ml-4">
         <div className="max-w-5xl">
-          <div className="inline-flex items-center bg-blue-50 px-3 py-2 text-xs uppercase tracking-[0.2em] text-blue-700">
+          <div className="inline-flex items-center bg-emerald-50 px-3 py-2 text-xs uppercase tracking-[0.2em] text-emerald-700">
             • ONE WORKSPACE. ZERO HALLUCINATIONS
           </div>
 
@@ -185,7 +185,7 @@ function TestimonialCard() {
         </p>
 
         <div className="mt-10 flex items-center gap-3">
-          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-200 to-blue-400" />
+          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-emerald-200 to-emerald-400" />
 
           <div>
             <div className="font-medium text-zinc-900">Kartikey Bhatnagar</div>

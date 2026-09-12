@@ -15,6 +15,7 @@
 		"db:migrate:dev": "prisma migrate dev",
 		"db:push": "prisma db push",
 		"db:seed": "tsx src/utils/seed.ts",
+		"db:import-blogs": "tsx src/utils/import-blogs.ts",
 		"db:generate": "prisma generate",
 		"format": "prisma format",
 		"lint": "eslint . --max-warnings 0",

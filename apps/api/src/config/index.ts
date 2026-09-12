@@ -47,6 +47,15 @@ export const config = {
 
   s3PublicUrl: process.env.S3_PUBLIC_URL || "http://localhost:9000/artifact-uploads", // s3PublicUrl is the base URL your app uses to generate file URLs that users can access.
 
+  // Redis — backs the shared (multi-instance-safe) rate-limit store, the read cache, and the
+  // BullMQ indexing job queue. One instance, three consumers.
+  redisUrl: process.env.REDIS_URL || "redis://localhost:6379",
+
+  // Optional. Powers the background indexing worker's real embedding calls (Gemini's
+  // text-embedding-004, 768 dims). If unset, the worker uses a deterministic local-dev
+  // placeholder instead — see lib/embeddings.ts.
+  geminiApiKey: process.env.GEMINI_API_KEY || "",
+
   /*
   
   Normally, MinIO buckets are private.

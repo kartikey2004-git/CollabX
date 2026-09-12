@@ -15,7 +15,7 @@ export function WorkFlow() {
 
       <div className="relative z-10 w-full px-4 sm:px-6 lg:px-10">
         <div className="mb-6 flex justify-center">
-          <div className="border border-blue-200 bg-blue-50 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.25em] text-blue-600">
+          <div className="border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.25em] text-emerald-600">
             THE ARCHITECTURE WORKFLOW, GROUNDED
           </div>
         </div>

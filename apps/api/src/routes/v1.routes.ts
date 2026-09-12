@@ -1,17 +1,27 @@
 import { Router } from "express";
-import workspaceRouter from "./workspace.routes";
-import workspaceMemberRouter from "./workspace-member.routes";
-import { directProjectRouter, nestedProjectRouter } from "./project.routes";
-import { directArtifactRouter, nestedArtifactRouter } from "./artifact.routes";
+import articleRouter from "./article.routes";
+import techReadRouter from "./tech-read.routes";
+import assetRouter from "./asset.routes";
+import userRouter from "./user.routes";
+import { createNestedSubmissionRouter, directSubmissionRouter } from "./submission.routes";
+import { createNestedCommentRouter, directCommentRouter } from "./comment.routes";
 
 // Combines all route modules into a single router, mounting each one at its appropriate URL path.
 const router = Router();
 
-router.use("/workspaces", workspaceRouter);
-router.use("/workspaces/:workspaceId/members", workspaceMemberRouter);
-router.use("/workspaces/:workspaceId/projects", nestedProjectRouter);
-router.use("/projects", directProjectRouter);
-router.use("/projects/:projectId/artifacts", nestedArtifactRouter);
-router.use("/artifacts", directArtifactRouter);
+router.use("/articles", articleRouter);
+router.use("/articles/:articleId/submissions", createNestedSubmissionRouter("article"));
+router.use("/articles/:articleId/comments", createNestedCommentRouter("article"));
+
+router.use("/tech-reads", techReadRouter);
+router.use("/tech-reads/:techReadId/submissions", createNestedSubmissionRouter("techRead"));
+router.use("/tech-reads/:techReadId/comments", createNestedCommentRouter("techRead"));
+
+router.use("/submissions", directSubmissionRouter);
+router.use("/submissions/:submissionId/assets", assetRouter);
+
+router.use("/comments", directCommentRouter);
+
+router.use("/users", userRouter);
 
 export default router;

@@ -110,7 +110,7 @@ function StackIllustration() {
             y2="0"
             gradientUnits="userSpaceOnUse"
           >
-            <stop offset="0%" stopColor="#7dd3fc" />
+            <stop offset="0%" stopColor="#6ee7b7" />
             <stop offset="35%" stopColor="#f5f5f5" />
             <stop offset="65%" stopColor="#fdba74" />
             <stop offset="100%" stopColor="#f9a8d4" />

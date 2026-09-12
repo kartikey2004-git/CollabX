@@ -82,7 +82,7 @@ export default function SignupPage() {
     const { error } = await authClient.signIn.social({
       provider: "google",
       callbackURL: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
-        }/workspace`,
+        }/articles`,
     });
     if (error) toast.error(error.message || "Google signup failed");
   };
@@ -92,7 +92,7 @@ export default function SignupPage() {
     const { error } = await authClient.signIn.social({
       provider: "github",
       callbackURL: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
-        }/workspace`,
+        }/articles`,
     });
     if (error) toast.error(error.message || "GitHub signup failed");
   };

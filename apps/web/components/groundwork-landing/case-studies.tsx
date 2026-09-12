@@ -42,7 +42,7 @@ export default function CaseStudiesSection() {
             company="Index"
             title="Explicit, one-click control over what the AI is allowed to learn."
             className="col-span-12 md:col-span-4"
-            blue
+            accent
           />
 
           <CaseCard
@@ -61,12 +61,12 @@ function CaseCard({
   title,
   company,
   className,
-  blue,
+  accent,
 }: {
   title: string;
   company: string;
   className?: string;
-  blue?: boolean;
+  accent?: boolean;
 }) {
   return (
     <motion.div
@@ -78,11 +78,11 @@ function CaseCard({
       }}
       className={`relative min-h-[170px] overflow-hidden border border-zinc-300 bg-white ${className}`}
     >
-      {blue && (
+      {accent && (
         <div
           className="absolute inset-0 opacity-80"
           style={{
-            background: "linear-gradient(135deg,#9fe7ff,#e6fbff,#d8fff3)",
+            background: "linear-gradient(135deg,#9fffca,#e6fff2,#d8fff3)",
           }}
         />
       )}
