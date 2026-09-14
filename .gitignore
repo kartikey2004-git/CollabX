@@ -27,14 +27,15 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
-!packages/database/.env
-
-# turbo
-.turbo
 
 .env
 
 dist
+dist-worker
 build
 prompts
 .neon
+*.tsbuildinfo
+
+# Prisma-generated client (regenerated via `prisma generate`, never hand-edited or committed)
+lib/generated/
