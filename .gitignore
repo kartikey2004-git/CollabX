@@ -39,3 +39,4 @@ prompts
 
 # Prisma-generated client (regenerated via `prisma generate`, never hand-edited or committed)
 lib/generated/
+.vercel
