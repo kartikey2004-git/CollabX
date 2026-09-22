@@ -14,7 +14,6 @@ import { MarkdownEditor } from "@/components/content/markdown-editor";
 import { ApiError } from "../../lib/api-client";
 import { useReviewSubmission, useSubmission, useUpdateSubmission } from "../../hooks/use-submissions";
 import { MarkdownView } from "../content/markdown-view";
-import { IndexingControl } from "./indexing-control";
 
 // PATCH /submissions/:id/review — ADMIN-only publish/reject. `reviewSubmissionSchema` is a
 // discriminated union on `action` (see @/lib/validation) — REJECT requires a non-empty
@@ -216,7 +215,6 @@ export function ReviewDetail({ submissionId }: { submissionId: string }) {
           <p className="text-sm text-muted-foreground">
             This submission has already been {submission.status.toLowerCase()}.
           </p>
-          {submission.status === "PUBLISHED" && <IndexingControl submission={submission} />}
         </div>
       )}
 

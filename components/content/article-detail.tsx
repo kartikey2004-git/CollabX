@@ -8,14 +8,11 @@ import { Button } from "@/components/ui/button";
 import { ApiError } from "../../lib/api-client";
 import { useArticle, useArticleNav } from "../../hooks/use-articles";
 import { useScrollSpy } from "../../hooks/use-scroll-spy";
-import { useCurrentUser } from "../../hooks/use-current-user";
-import { canModerate } from "../../hooks/use-role";
 import { CATEGORY_LABELS } from "../../lib/category-labels";
 import { extractHeadings } from "../../lib/markdown-headings";
 import { MarkdownView } from "./markdown-view";
 import { StatusBadge } from "../shared/status-badge";
 import { CommentSection } from "../comments/comment-section";
-import { IndexingControl } from "../admin/indexing-control";
 import { useToc } from "../layout/toc-context";
 
 // GET /articles/slug/:slug — see docs/changes/004-backend-changes.md for the exact 404/403 shape:
@@ -34,7 +31,6 @@ function estimateReadMinutes(content: string): number {
 export function ArticleDetail({ slug }: { slug: string }) {
   const { data: article, isPending, isError, error } = useArticle(slug);
   const { data: nav } = useArticleNav();
-  const { role } = useCurrentUser();
   const toc = useToc();
 
   const headings = useMemo(
@@ -138,10 +134,6 @@ export function ArticleDetail({ slug }: { slug: string }) {
           </p>
         )}
       </div>
-
-      {canModerate(role) && article.currentSubmission && (
-        <IndexingControl submission={article.currentSubmission} />
-      )}
 
       {article.currentSubmission ? (
         <MarkdownView content={article.currentSubmission.content} />

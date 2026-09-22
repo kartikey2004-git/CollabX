@@ -48,8 +48,7 @@ export const config = {
 
   s3PublicUrl: process.env.S3_PUBLIC_URL || "http://localhost:9000/artifact-uploads", // s3PublicUrl is the base URL your app uses to generate file URLs that users can access.
 
-  // Redis — backs the shared (multi-instance-safe) rate-limit store and the read cache. Background
-  // indexing runs through Inngest events now, not through Redis.
+  // Redis — backs the shared (multi-instance-safe) rate-limit store and the read cache.
   //
   // Two backends, picked by lib/redis.ts based on `isProduction` (never by which of these happen
   // to be set — local .env files commonly carry both at once for convenience):
@@ -59,11 +58,6 @@ export const config = {
   redisUrl: process.env.REDIS_URL || "redis://localhost:6379",
   upstashRedisRestUrl: process.env.UPSTASH_REDIS_REST_URL || "",
   upstashRedisRestToken: process.env.UPSTASH_REDIS_REST_TOKEN || "",
-
-  // Optional. Powers the background indexing worker's real embedding calls (Gemini's
-  // text-embedding-004, 768 dims). If unset, the worker uses a deterministic local-dev
-  // placeholder instead — see lib/embeddings.ts.
-  geminiApiKey: process.env.GEMINI_API_KEY || "",
 
   /*
   

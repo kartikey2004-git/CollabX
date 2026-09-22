@@ -1,45 +1,38 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Pencil,
-  Network,
-  Send,
-  ShieldCheck,
-  MessagesSquare,
-  ArrowRight,
-  Workflow,
-} from "lucide-react";
-import { AnimationContainer } from "./animation-container";
-import { cn } from "@/lib/utils";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { StackIllustration } from "./stack-illustration";
 
 export function Hero() {
   return (
     <section className="relative w-full overflow-hidden">
-      <div className="relative z-10 w-full px-4 text-center sm:px-6 lg:px-10">
-        <div className="w-full text-center">
+      <div className="relative z-10 mx-auto grid w-full max-w-[1300px] gap-16 px-4 sm:px-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:px-10">
+        <div className="text-left">
           <div className="mb-7">
             <span className="inline-flex items-center bg-[#dcfce7] px-5 py-2 text-[12px] font-medium uppercase tracking-[0.22em] text-[#047857]">
-              FOR ENGINEERING TEAMS & TECHNICAL WRITERS
+              AN ARCHIVE OPEN TO EVERY ENGINEER
             </span>
           </div>
 
-          <h1 className="mx-auto max-w-[1100px] text-[52px] font-medium leading-[0.96] tracking-[-0.06em] text-black md:text-[66px]">
-            Engineering Writing Your
+          <h1 className="max-w-[640px] text-[42px] font-medium leading-[0.96] tracking-[-0.06em] text-black md:text-[54px]">
+            The Engineering Archive,
             <br />
-            Team Can <span className="text-[#047857]">Actually</span>
+            Written By Engineers Who{" "}
+            <span className="text-[#047857]">Actually</span>
             <br />
-            Trust — Reviewed First
+            Did The Work
           </h1>
 
-          <p className="mx-auto mt-7 max-w-190 text-[18px] leading-[1.3] text-[#666666] md:text-[20px]">
-            Draft Articles and curated Tech Reads in a real Markdown editor
-            with live Mermaid previews, submit for review, and let an admin
-            sign off before anything goes live.
+          <p className="mt-7 max-w-[540px] text-[18px] leading-[1.3] text-[#666666] md:text-[20px]">
+            A growing archive of real engineering problems and how they were
+            actually solved, written by the engineers who solved them. Read
+            what others have already figured out, or contribute what you've
+            learned so the next engineer doesn't start from zero.
           </p>
 
-          <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div className="mt-12 flex flex-col items-start gap-4 sm:flex-row">
             <Button
               asChild
               size="lg"
@@ -61,107 +54,18 @@ export function Hero() {
             </Button>
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-sm font-medium text-neutral-600">
-            <span>Markdown Native |</span>
-            <span>Mermaid Diagrams |</span>
-            <span>Draft → Review → Publish |</span>
-            <span>Threaded Discussion</span>
+          <div className="mt-6 flex flex-wrap items-center gap-2 text-sm font-medium text-neutral-600">
+            <span>Real Problems |</span>
+            <span>Written By Engineers |</span>
+            <span>Reviewed By Peers |</span>
+            <span>Always Growing</span>
           </div>
+        </div>
 
-          <div className="hidden lg:block">
-            <div className="relative mt-40 h-[300px] w-full pt-10">
-              <AnimationContainer />
-
-              <SignalCard
-                className="absolute left-1/2 top-[-110px] -translate-x-1/2"
-                icon={<Pencil size={18} />}
-                label="Write in Markdown"
-              />
-
-              <SignalCard
-                className="absolute left-80 top-[-10px]"
-                icon={<Network size={18} />}
-                label="Mermaid Diagrams"
-              />
-
-              <SignalCard
-                className="absolute top-[90px] left-50"
-                icon={<Send size={18} />}
-                label="Submit for Review"
-              />
-
-              <SignalCard
-                className="absolute right-90 top-[-10px]"
-                icon={<ShieldCheck size={18} />}
-                label="Admin Publishes"
-              />
-
-              <SignalCard
-                className="absolute right-50 top-[90px]"
-                icon={<MessagesSquare size={18} />}
-                label="Readers Discuss"
-              />
-            </div>
-
-            <div className="-mt-1">
-              <DottedFooter />
-              <CenterHub />
-            </div>
-          </div>
+        <div className="hidden justify-center py-10 lg:flex">
+          <StackIllustration />
         </div>
       </div>
     </section>
-  );
-}
-
-function SignalCard({
-  icon,
-  label,
-  className,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  className?: string;
-}) {
-  return (
-    <div
-      className={cn(
-        "z-30 flex items-center gap-3 border border-white/60 bg-white/30 px-5 py-3 backdrop-blur-md",
-        "shadow-[0_8px_30px_rgba(255,255,255,0.15)]",
-        className,
-      )}
-    >
-      {icon}
-      <span className="font-medium text-xs md:text-sm uppercase tracking-tight text-black">
-        {label}
-      </span>
-    </div>
-  );
-}
-
-function DottedFooter() {
-  return (
-    <div className="absolute bottom-0 z-20 h-[70px] w-full bg-white">
-      <div
-        className="h-full w-full"
-        style={{
-          backgroundImage: "radial-gradient(#d9d9d9 1px, transparent 1px)",
-          backgroundSize: "14px 14px",
-        }}
-      />
-    </div>
-  );
-}
-
-function CenterHub() {
-  return (
-    <div className="absolute bottom-0 left-1/2 z-40 -translate-x-1/2 pt-4 -ml-2">
-      <div className="ml-10 flex h-[140px] w-[140px] items-center justify-center rounded-t-[24px] border border-white/70 bg-[#f5f5f5] md:h-[180px] md:w-[180px]">
-        <Workflow
-          className="h-12 w-12 text-black md:h-16 md:w-16"
-          strokeWidth={1.75}
-        />
-      </div>
-    </div>
   );
 }

@@ -7,7 +7,7 @@ const AUTH_ONLY_ROUTES = ["/login", "/signup"];
 // published content (list, detail, comments) to anonymous callers via `optionalAuth` (see
 // apps/api/src/middleware/auth.middleware.ts), so gating these routes on a session cookie here
 // would block a reading experience the API already supports. `/dashboard` (a contributor's own
-// content) and `/admin` (moderation/user-management/indexing) still require a real session — both
+// content) and `/admin` (moderation/user-management) still require a real session — both
 // are meaningless without one.
 const PROTECTED_ROUTES = ["/dashboard", "/admin"];
 

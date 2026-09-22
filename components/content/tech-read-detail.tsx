@@ -7,17 +7,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ApiError } from "../../lib/api-client";
 import { useTechRead } from "../../hooks/use-tech-reads";
-import { useCurrentUser } from "../../hooks/use-current-user";
-import { canModerate } from "../../hooks/use-role";
 import { CATEGORY_LABELS } from "../../lib/category-labels";
 import { MarkdownView } from "./markdown-view";
 import { StatusBadge } from "../shared/status-badge";
 import { CommentSection } from "../comments/comment-section";
-import { IndexingControl } from "../admin/indexing-control";
 
 export function TechReadDetail({ slug }: { slug: string }) {
   const { data: techRead, isPending, isError, error } = useTechRead(slug);
-  const { role } = useCurrentUser();
 
   if (isPending) {
     return (
@@ -80,10 +76,6 @@ export function TechReadDetail({ slug }: { slug: string }) {
           Read the source{techRead.sourceName ? ` on ${techRead.sourceName}` : ""}
         </a>
       </div>
-
-      {canModerate(role) && techRead.currentSubmission && (
-        <IndexingControl submission={techRead.currentSubmission} />
-      )}
 
       {techRead.currentSubmission?.content && (
         <MarkdownView content={techRead.currentSubmission.content} />

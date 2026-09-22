@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Asterisk, ChevronDown, Database, LayoutDashboard, Newspaper, PenSquare, ShieldCheck, Users } from "lucide-react";
+import { Asterisk, ChevronDown, LayoutDashboard, Newspaper, PenSquare, ShieldCheck, Users } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -56,7 +56,6 @@ export const NAV_LINKS = [
 export const ADMIN_LINKS = [
   { href: "/admin/review", label: "Review Queue", icon: ShieldCheck },
   { href: "/admin/users", label: "Manage Users", icon: Users },
-  { href: "/admin/indexing", label: "Indexing", icon: Database },
 ];
 
 interface AppSidebarProps {
@@ -77,7 +76,7 @@ export function AppSidebar({ onResizeStart }: AppSidebarProps) {
       <SidebarHeader className="shrink-0">
         <div className="flex items-center justify-between gap-2 px-2 py-1">
           <Link href="/articles" className="flex min-w-0 items-center gap-2 font-semibold">
-            <Asterisk className="h-5 w-5 shrink-0" />
+            
             <span className="truncate group-data-[collapsible=icon]:hidden">CollabX</span>
           </Link>
           {canCreateContent(role) && (

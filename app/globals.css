@@ -141,6 +141,87 @@ limitations" — a live Mermaid renderer is future work, not implemented here).
   padding: 0;
 }
 
+/* rehype-highlight token colors, driven by the same --chart-* tokens the rest of the app already
+   uses for categorical color (so this tracks light/dark automatically instead of hardcoding hex). */
+.markdown-body .hljs-comment,
+.markdown-body .hljs-quote {
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+
+.markdown-body .hljs-keyword,
+.markdown-body .hljs-selector-tag,
+.markdown-body .hljs-subst {
+  color: var(--chart-3);
+}
+
+.markdown-body .hljs-number,
+.markdown-body .hljs-literal,
+.markdown-body .hljs-variable,
+.markdown-body .hljs-template-variable,
+.markdown-body .hljs-tag .hljs-attr {
+  color: var(--chart-2);
+}
+
+.markdown-body .hljs-string,
+.markdown-body .hljs-doctag {
+  color: var(--chart-1);
+}
+
+.markdown-body .hljs-title,
+.markdown-body .hljs-section,
+.markdown-body .hljs-selector-id {
+  color: var(--chart-4);
+  font-weight: 600;
+}
+
+.markdown-body .hljs-type,
+.markdown-body .hljs-class .hljs-title {
+  color: var(--chart-5);
+}
+
+.markdown-body .hljs-tag,
+.markdown-body .hljs-name,
+.markdown-body .hljs-attribute {
+  color: var(--chart-2);
+  font-weight: 400;
+}
+
+.markdown-body .hljs-regexp,
+.markdown-body .hljs-link {
+  color: var(--chart-1);
+}
+
+.markdown-body .hljs-symbol,
+.markdown-body .hljs-bullet {
+  color: var(--chart-3);
+}
+
+.markdown-body .hljs-built_in,
+.markdown-body .hljs-builtin-name {
+  color: var(--chart-5);
+}
+
+.markdown-body .hljs-meta {
+  color: var(--muted-foreground);
+}
+
+.markdown-body .hljs-deletion {
+  background: color-mix(in oklch, var(--destructive) 15%, transparent);
+}
+
+.markdown-body .hljs-addition {
+  background: color-mix(in oklch, var(--chart-2) 15%, transparent);
+}
+
+.markdown-body .hljs-emphasis {
+  font-style: italic;
+}
+
+.markdown-body .hljs-strong {
+  font-weight: 600;
+}
+
 .markdown-body img {
   max-width: 100%;
   border-radius: 0.375rem;

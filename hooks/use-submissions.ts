@@ -6,7 +6,6 @@ import type { Submission } from "@/lib/db";
 import type {
   ContentStatusInput,
   CreateSubmissionInput,
-  IndexStatusInput,
   ReviewSubmissionInput,
   UpdateSubmissionInput,
 } from "@/lib/validation";
@@ -99,16 +98,12 @@ export function useSubmitForReview() {
   });
 }
 
-// GET /submissions/:id — owner, ADMIN, or (if PUBLISHED) anyone. Polls every 2s while indexing is
-// in flight (INDEXING is normally transient, a few seconds — see lib/inngest/functions.ts) so an
-// admin watching this page sees it flip to INDEXED without a manual refresh; stops polling for
-// every other state.
+// GET /submissions/:id — owner, ADMIN, or (if PUBLISHED) anyone.
 export function useSubmission(id: string) {
   return useQuery({
     queryKey: submissionQueryKey(id),
     queryFn: () => apiClient.get<Submission>(`/api/v1/submissions/${id}`),
     enabled: Boolean(id),
-    refetchInterval: (query) => (query.state.data?.indexStatus === "INDEXING" ? 2000 : false),
   });
 }
 
@@ -166,45 +161,6 @@ export function useReviewSubmission(submissionId: string) {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: submissionQueryKey(submissionId) });
       queryClient.invalidateQueries({ queryKey: ["submissions", "queue"] });
-      queryClient.invalidateQueries({ queryKey: ["articles"] });
-      queryClient.invalidateQueries({ queryKey: ["tech-reads"] });
-    },
-  });
-}
-
-export const indexingDashboardQueryKey = (indexStatus?: IndexStatusInput) =>
-  ["submissions", "indexing", indexStatus ?? null] as const;
-
-// GET /submissions/indexing — ADMIN-only "Indexing" dashboard, cursor-paginated via "Load more"
-// (same pattern as useReviewQueue).
-export function useIndexingDashboard(indexStatus?: IndexStatusInput) {
-  return useInfiniteQuery({
-    queryKey: indexingDashboardQueryKey(indexStatus),
-    queryFn: ({ pageParam }: { pageParam: string | null }) =>
-      apiClient.get<ListResult<Submission>>(
-        `/api/v1/submissions/indexing${buildQuery({ indexStatus, cursor: pageParam ?? undefined })}`,
-      ),
-    initialPageParam: null as string | null,
-    getNextPageParam: (lastPage) => (lastPage.meta.hasMore ? lastPage.meta.nextCursor : undefined),
-  });
-}
-
-// POST /submissions/:id/reindex — ADMIN-only manual re-enqueue.
-export function useReindexSubmission() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (submissionId: string) =>
-      apiClient.post<Submission>(`/api/v1/submissions/${submissionId}/reindex`),
-    onSuccess: () => {
-      toast.success("Re-indexing queued");
-    },
-    onError: (error) => {
-      toast.error(errorMessage(error, "Failed to queue re-indexing"));
-    },
-    onSettled: (_data, _error, submissionId) => {
-      queryClient.invalidateQueries({ queryKey: submissionQueryKey(submissionId) });
-      queryClient.invalidateQueries({ queryKey: ["submissions", "indexing"] });
       queryClient.invalidateQueries({ queryKey: ["articles"] });
       queryClient.invalidateQueries({ queryKey: ["tech-reads"] });
     },

@@ -70,25 +70,8 @@ export const submissionHistoryQuerySchema = paginationQuerySchema.extend({
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
 
-// The four states of the AI indexing pipeline (schema.prisma's `IndexStatus` enum).
-
-export const indexStatusSchema = z.enum(["NOT_INDEXED", "INDEXING", "INDEXED", "STALE"]);
-
-// GET /submissions/indexing — ADMIN-only "Indexing" dashboard: every PUBLISHED submission (any
-// submission that isn't PUBLISHED was never enqueued for indexing in the first place — see
-// submission.service.ts's PUBLISH branch), optionally narrowed to one indexStatus (e.g. "show me
-// everything still NOT_INDEXED" to find what failed to enqueue). Sorted the same
-// newest-submittedAt-first way as the moderation queue, reusing the same
-// `@@index([status, submittedAt])` — no new index needed.
-
-export const listIndexableQuerySchema = paginationQuerySchema.extend({
-  indexStatus: indexStatusSchema.optional(),
-});
-
 export type CreateSubmissionInput = z.infer<typeof createSubmissionSchema>;
 export type UpdateSubmissionInput = z.infer<typeof updateSubmissionSchema>;
 export type ReviewSubmissionInput = z.infer<typeof reviewSubmissionSchema>;
 export type SubmissionQueueQuery = z.infer<typeof submissionQueueQuerySchema>;
 export type SubmissionHistoryQuery = z.infer<typeof submissionHistoryQuerySchema>;
-export type IndexStatusInput = z.infer<typeof indexStatusSchema>;
-export type ListIndexableQuery = z.infer<typeof listIndexableQuerySchema>;

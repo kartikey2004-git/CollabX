@@ -2,6 +2,7 @@
 
 import { isValidElement } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
+import rehypeHighlight from "rehype-highlight";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
 import { MermaidDiagram } from "./mermaid-diagram";
@@ -28,6 +29,10 @@ fenced code block, but MermaidDiagram renders a `<div>`, which isn't valid insid
 unwraps itself only when its child is a mermaid block, otherwise it renders exactly as before. Every
 other fenced/inline code block is completely unaffected.
 
+rehype-highlight wraps tokens inside every other fenced/inline code block in `hljs-*` spans (via
+highlight.js, same as the rest of remark-gfm/react-markdown's tree — no dangerouslySetInnerHTML
+involved). The `.markdown-body .hljs-*` colors live in globals.css.
+
 */
 
 // rehypeSlug ids every rendered heading with github-slugger, the same slugger
@@ -36,6 +41,17 @@ other fenced/inline code block is completely unaffected.
 
 function languageOf(className: string | null | undefined): string | undefined {
   return /language-(\w+)/.exec(className ?? "")?.[1];
+}
+
+// Guards against malformed input (odd \r\n mixes, runs of blank lines from pasted content, an
+// unclosed ``` fence) throwing off remark's block parsing before it ever reaches ReactMarkdown.
+function preprocessMarkdown(content: string): string {
+  let processed = content.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  processed = processed.replace(/\n{3,}/g, "\n\n");
+  if ((processed.match(/```/g) ?? []).length % 2 !== 0) {
+    processed += "\n```";
+  }
+  return processed;
 }
 
 const components: Components = {
@@ -65,8 +81,12 @@ const components: Components = {
 export function MarkdownView({ content }: { content: string }) {
   return (
     <div className="markdown-body">
-      <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSlug]} components={components}>
-        {content}
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeSlug, rehypeHighlight]}
+        components={components}
+      >
+        {preprocessMarkdown(content)}
       </ReactMarkdown>
     </div>
   );

@@ -5,7 +5,6 @@
 generator client {
   provider        = "prisma-client"
   output          = "../lib/generated/prisma"
-  previewFeatures = ["postgresqlExtensions"]
   // Prisma 7's `prisma-client` generator is ESM-first by default; this app's package.json has no
   // "type": "module", so without forcing cjs output here, `next build`'s Node runtime bundling and
   // any plain `node`-run script (worker/index.ts, scripts/seed.ts) can hit
@@ -14,8 +13,7 @@ generator client {
 }
 
 datasource db {
-  provider   = "postgresql"
-  extensions = [vector]
+  provider = "postgresql"
 }
 
 // Use a DB-level enum instead of a string to enforce valid roles.
@@ -56,15 +54,6 @@ enum ContentStatus {
 enum VerificationType {
   EMAIL_VERIFICATION
   PASSWORD_RESET
-}
-
-// Manages the AI background job state machine where worker picks up NOT_INDEXED, updates to INDEXING, finishes and sets INDEXED. If doc is edited, set to STALE.
-
-enum IndexStatus {
-  NOT_INDEXED
-  INDEXING
-  INDEXED
-  STALE
 }
 
 // A human being using the app which is core identity, authentication, and profile management
@@ -236,8 +225,8 @@ model Article {
 
   comments Comment[]
 
-  // Assets and vector embeddings now hang off Submission (see below), since both an uploaded image and an
-  // indexed chunk belong to one specific reviewed version of the content, not to the Article as a whole.
+  // Assets hang off Submission (see below), since an uploaded image belongs to one specific
+  // reviewed version of the content, not to the Article as a whole.
 
   @@index([category, status])
   @@index([createdBy])
@@ -359,15 +348,11 @@ model Submission {
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
 
-  // Assets and embeddings are derived from this specific version's Markdown content, not from the
-  // Article/TechRead as a whole - an older, unpublished, or rejected version can have its own images and its
-  // own indexed chunks without colliding with the currently-published version's.
+  // Assets are derived from this specific version's Markdown content, not from the
+  // Article/TechRead as a whole - an older, unpublished, or rejected version can have its own images
+  // without colliding with the currently-published version's.
 
   assets Asset[]
-
-  indexStatus      IndexStatus       @default(NOT_INDEXED) // Tracks AI embedding pipeline state for this version's content.
-  lastIndexedAt    DateTime?         @db.Timestamptz(3)
-  vectorEmbeddings VectorEmbedding[]
 
   @@unique([articleId, version]) // Monotonic version numbers per article ("v1, v2, v3" UI); NULL articleId rows (TechRead submissions) never collide here.
   @@unique([techReadId, version])
@@ -386,7 +371,7 @@ model Submission {
 //   ALTER TABLE "comments" ADD CONSTRAINT "comments_article_xor_tech_read"
 //     CHECK (num_nonnulls("articleId", "techReadId") = 1);
 //
-// so replies, moderation, and indexing logic is written once instead of duplicated per content type.
+// so replies and moderation logic is written once instead of duplicated per content type.
 
 model Comment {
   id String @id @default(cuid())
@@ -451,45 +436,6 @@ model Asset {
   @@map("assets")
 }
 
-// AI Context Chunks which powers semantic search over knowledge content by storing vectorized text. Owned by
-// the specific Submission the text was chunked from (see Asset above for the same rationale) - a single
-// required FK, so no exactly-one-of-two-columns CHECK constraint is needed here either.
-
-model VectorEmbedding {
-  id String @id @default(cuid())
-
-  submissionId String
-  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-
-  chunkIndex Int // Order of the chunk within the document for reconstructing document order.
-
-  embeddingModel String // e.g. gemini-embedding-001. Required (not nullable) - the [submissionId, embeddingModel, contentHash] unique constraint below only provides real idempotency once every row commits to a specific model.
-
-  contentHash String @db.VarChar(64) // SHA-256 of the text. Required (not nullable) for the same reason - a NULL hash can't dedupe re-embedding attempts.
-
-  tokenCount Int? // Cost tracking for AI APIs for billing, rate limiting.
-
-  content String @db.Text // The raw text chunk for returning context to the LLM.
-
-  embedding Unsupported("vector(768)") // pgvector type 768 dimensions which enables semantic similarity search.
-
-  createdAt DateTime @default(now()) @db.Timestamptz(3)
-
-  @@unique([submissionId, chunkIndex])
-  @@unique([submissionId, embeddingModel, contentHash]) // Safe "upsert" / idempotency key during background indexing: same version + model + unchanged text => no duplicate row.
-  @@index([submissionId])
-  @@index([contentHash])
-  @@map("vector_embeddings")
-}
-
-/**
- * - The schema lacks an explicit HNSW index on the embedding column. I already manually add this via raw SQL for fast cosine similarity!
- * - Index Types:
- * - B-Tree: Default. Great for equality (=) and range (>, <).
- * - Generalized Inverted Index : Helps if we query inside Json/array columns (e.g. TechRead.tags).
- * - HNSW: Required for the vector(768) column to do fast Approximate Nearest Neighbor (ANN) search.
- */
-
 /**
  * - All createdAt and updatedAt @default(now()) : ensures accurate audit trails even if the application server's clock is slightly off (DB handles it).
  * - Required Fields and most primary keys , foreign keys : Enforces referential integrity. You can't have a Submission without an Article or TechRead.
@@ -522,13 +468,13 @@ model VectorEmbedding {
  * migration SQL rather than expressed declaratively here. This keeps referential integrity and cascading
  * deletes while letting replies/moderation and versioning be written once and reused across both
  * Articles and Tech Reads.
- * - Asset and VectorEmbedding are NOT part of this pattern: both belong to one specific Submission (a
- * single required FK), so there's nothing to CHECK - the version they're attached to already resolves to
+ * - Asset is NOT part of this pattern: it belongs to one specific Submission (a
+ * single required FK), so there's nothing to CHECK - the version it's attached to already resolves to
  * exactly one Article or TechRead.
  * Cascading Behaviors (Crucial for Data Integrity)
- * - onDelete: Cascade: Used for Session, Account, Submission, Comment, Asset, VectorEmbedding.
+ * - onDelete: Cascade: Used for Session, Account, Submission, Comment, Asset.
  * - Why? If an Article/TechRead is deleted, its submissions are meaningless without it and should
- * vanish, and each submission's own assets/embeddings go with it. Comments cascade with their
+ * vanish, and each submission's own assets go with it. Comments cascade with their
  * Article/TechRead for the same reason.
  * - onDelete: Restrict: Used for Article.createdBy, TechRead.createdBy, Submission.submittedBy,
  * Asset.uploadedBy, and Comment.parentComment (self-relation).

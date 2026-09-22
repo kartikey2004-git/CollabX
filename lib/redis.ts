@@ -55,8 +55,7 @@ class UpstashRedisAdapter implements RedisClient {
 }
 
 // One shared Redis connection, reused by two consumers: the rate-limit store (rate-limit.ts) and
-// the read cache (cache.ts). Background indexing no longer goes through Redis at all — it's
-// Inngest events now (lib/inngest/), not a Redis-backed BullMQ queue.
+// the read cache (cache.ts).
 //
 // Backend is picked by environment, not by which env vars happen to be present — a local .env
 // commonly carries both REDIS_URL (for docker-compose's local `redis` service) and Upstash's REST

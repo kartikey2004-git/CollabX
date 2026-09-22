@@ -27,17 +27,6 @@ export default function FAQSection() {
               We got answers
             </h2>
 
-            <div className="absolute bottom-0 left-0 right-0 flex items-end justify-center opacity-[0.04]">
-              <div className="relative h-[280px] w-[280px]">
-                <div className="absolute left-1/2 top-8 h-[180px] w-[2px] -translate-x-1/2 bg-black" />
-                <div className="absolute left-[60px] top-[100px] h-[2px] w-[160px] bg-black" />
-
-                <div className="absolute left-1/2 top-0 h-10 w-10 -translate-x-1/2 rounded-full bg-black" />
-                <div className="absolute left-0 top-[80px] h-10 w-10 rounded-full bg-black" />
-                <div className="absolute right-0 top-[80px] h-10 w-10 rounded-full bg-black" />
-                <div className="absolute bottom-0 left-1/2 h-10 w-10 -translate-x-1/2 rounded-full bg-black" />
-              </div>
-            </div>
           </div>
 
           <div>

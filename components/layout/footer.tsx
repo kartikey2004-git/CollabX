@@ -15,12 +15,12 @@ export default function SiteFooter() {
         {/* LEFT: logo, tagline, contact, email */}
         <div className="border-b border-white/10 px-8 py-14 md:px-12">
           <div className="flex items-center gap-2">
-            <Asterisk className="h-6 w-6 text-white" strokeWidth={2} />
+            
             <span className="text-lg font-semibold">CollabX</span>
           </div>
 
           <h3 className="mt-8 max-w-md text-2xl font-semibold leading-snug text-white">
-            CollabX — Engineering Knowledge, Reviewed Before It Ships
+            The Engineering Archive, Written by Engineers
           </h3>
 
           <p className="mt-3 text-sm text-white/50">

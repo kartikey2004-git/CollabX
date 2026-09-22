@@ -3,7 +3,6 @@ import type { Role, Submission } from "../db";
 import { Prisma } from "../db";
 import type {
   CreateSubmissionInput,
-  ListIndexableQuery,
   ReviewSubmissionInput,
   SubmissionHistoryQuery,
   SubmissionQueueQuery,
@@ -16,7 +15,6 @@ import { articleService } from "./article.service";
 import { techReadService } from "./tech-read.service";
 import { sanitizeMarkdownText } from "./markdown.service";
 import { ConflictError, ForbiddenError, NotFoundError } from "../errors";
-import { enqueueIndexing } from "../inngest/events";
 import { invalidateCache } from "../cache";
 
 function parentIdOf(submission: Submission): { parentType: ParentType; parentId: string } {
@@ -220,12 +218,10 @@ export const submissionService = {
         return published;
       });
 
-      // Both of these run AFTER the transaction has committed, never inside it — a Redis call
-      // (either one) inside the transaction callback would hold the DB transaction open across a
-      // network round-trip, and if it failed, roll back a publish that Redis had already been
-      // told about. Neither is allowed to fail the request: see enqueueIndexing's and
-      // invalidateCache's own comments for why each swallows its own errors.
-      await enqueueIndexing(submissionId);
+      // Runs AFTER the transaction has committed, never inside it — a Redis call inside the
+      // transaction callback would hold the DB transaction open across a network round-trip, and
+      // if it failed, roll back a publish Redis had already been told about. Not allowed to fail
+      // the request: see invalidateCache's own comment for why it swallows its own errors.
       await invalidateCache(parentType === "article" ? "articles:list:" : "tech-reads:list:");
 
       return updated;
@@ -282,34 +278,5 @@ export const submissionService = {
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
     });
-  },
-
-  // ADMIN-only "Indexing" dashboard listing — see submission.repository.ts::findIndexable.
-  listIndexable(query: ListIndexableQuery) {
-    return submissionRepository.findIndexable({
-      indexStatus: query.indexStatus,
-      cursor: query.cursor,
-      limit: query.limit,
-    });
-  },
-
-  // ADMIN-only manual re-enqueue (enforced by the route, not re-checked here — same convention as
-  // techReadService.updateTrending). Only a PUBLISHED submission can be (re-)indexed: a
-  // DRAFT/PENDING_REVIEW/REJECTED submission was never eligible for indexing in the first place
-  // (see the PUBLISH branch of `review` above, the only place indexing is ever enqueued), so
-  // re-indexing one would create VectorEmbedding rows for content nobody can actually read yet.
-  // Useful when the initial enqueue failed (e.g. Redis was briefly down) or after a provider/model
-  // change makes re-embedding worthwhile.
-  async reindex(submissionId: string): Promise<Submission> {
-    const submission = await submissionRepository.findById(submissionId);
-    if (!submission) {
-      throw new NotFoundError("Submission not found");
-    }
-    if (submission.status !== "PUBLISHED") {
-      throw new ConflictError("Only a published submission can be re-indexed");
-    }
-
-    await enqueueIndexing(submissionId);
-    return submission;
   },
 };

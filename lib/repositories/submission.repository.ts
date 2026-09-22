@@ -1,5 +1,5 @@
 import db from "../db";
-import type { ContentStatus, IndexStatus, Prisma, Submission } from "../db";
+import type { ContentStatus, Prisma, Submission } from "../db";
 import { buildKeysetWhere, decodeCursor, paginateResults } from "../pagination";
 
 // Either the normal database client, or a transaction client (used when several database calls
@@ -167,28 +167,5 @@ export const submissionRepository = {
 
     const rows = await db.submission.findMany({ where, orderBy, take: params.limit + 1 });
     return paginateResults(rows, params.limit, params.sortBy);
-  },
-
-  // The ADMIN "Indexing" dashboard: every PUBLISHED submission, optionally narrowed to one
-  // indexStatus, newest-submittedAt-first — same ordering/cursor shape as findQueue above, reusing
-  // the same `@@index([status, submittedAt])` (indexStatus itself has no index, but this is a
-  // low-traffic admin-only view, not a hot path).
-  async findIndexable(params: { indexStatus?: IndexStatus; cursor?: string; limit: number }) {
-    const cursor = params.cursor ? decodeCursor(params.cursor) : undefined;
-    const keysetWhere = buildKeysetWhere("submittedAt", "desc", cursor);
-
-    const where = {
-      status: "PUBLISHED",
-      ...(params.indexStatus ? { indexStatus: params.indexStatus } : {}),
-      ...(keysetWhere ?? {}),
-    } as Prisma.SubmissionWhereInput;
-
-    const rows = await db.submission.findMany({
-      where,
-      orderBy: [{ submittedAt: "desc" }, { id: "desc" }],
-      take: params.limit + 1,
-    });
-
-    return paginateResults(rows, params.limit, "submittedAt");
   },
 };

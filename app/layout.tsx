@@ -3,9 +3,9 @@ import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 export const metadata: Metadata = {
-  title: "CollabX — Engineering Knowledge, Reviewed Before It Ships",
+  title: "CollabX: The Engineering Archive, Written by Engineers",
   description:
-    "Articles and curated Tech Reads, written in Markdown with live Mermaid diagrams, drafted by contributors and published only after an admin reviews it.",
+    "A growing archive of real engineering problems and how they were actually solved. Written by the engineers who solved them, reviewed by their peers, and open for any engineer to contribute to.",
 };
 
 export default function RootLayout({

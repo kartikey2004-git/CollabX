@@ -1,41 +1,8 @@
-import {
-  Pencil,
-  Send,
-  ShieldCheck,
-  MessagesSquare,
-  Sparkles,
-  RefreshCw,
-  Users,
-  Layers,
-  LucideIcon,
-} from "lucide-react";
-
-export type Step = {
-  id: number;
-  title: string;
-  description: string;
-  tags: string[];
-  panelTitle: string;
-  panelDescription: string;
-  icon: React.ElementType;
-};
+import { Search, Sparkles, RefreshCw, Users, Layers } from "lucide-react";
 
 export type Faq = {
   question: string;
   answer: string;
-};
-
-export type Path = {
-  d: string;
-  transform: string;
-};
-
-export type workflowStep = {
-  title: string;
-  description: string;
-  icon: LucideIcon;
-  border: string;
-  bg: string;
 };
 
 export type Feature = {
@@ -72,169 +39,67 @@ export const nav: NavItem[] = [
   },
 ];
 
-// The four real stages a Submission moves through (schema.prisma's ContentStatus: DRAFT ->
-// PENDING_REVIEW -> PUBLISHED/REJECTED), used by the scroll-driven process section.
-
-export const steps: Step[] = [
-  {
-    id: 1,
-    title: "Write",
-    description:
-      "Draft Articles and curated Tech Reads in a real Markdown editor with syntax highlighting, a formatting toolbar, and a live split preview.",
-    tags: ["Markdown", "Mermaid", "Live Preview"],
-    panelTitle: "Real Editor Feel",
-    panelDescription:
-      "Bold, headings, lists, and tables from a toolbar — or just type Markdown directly with syntax highlighting as you go. Diagrams in ```mermaid fences render live, right next to what you're writing.",
-    icon: Pencil,
-  },
-  {
-    id: 2,
-    title: "Submit",
-    description:
-      "Send a draft for review — nothing on CollabX gets published without a human editorial pass.",
-    tags: ["Draft", "Pending Review"],
-    panelTitle: "One Draft At A Time",
-    panelDescription:
-      "Only one draft or pending submission can be in flight per Article or Tech Read, so it's always unambiguous which version is actually being worked on.",
-    icon: Send,
-  },
-  {
-    id: 3,
-    title: "Review",
-    description:
-      "An admin reads every pending submission, can fix a typo or heading directly, then publishes or rejects it with a reason.",
-    tags: ["Admin", "Edit", "Publish or Reject"],
-    panelTitle: "A Real Editorial Gate",
-    panelDescription:
-      "Publish and reject both run as a single transaction, so a piece is never left published-but-stale. Reject one, and the reason travels back to the contributor, who resubmits as the next version.",
-    icon: ShieldCheck,
-  },
-  {
-    id: 4,
-    title: "Discover",
-    description:
-      "Published Articles and Tech Reads are organized by category, easy to navigate, and open for discussion.",
-    tags: ["Categories", "Comments"],
-    panelTitle: "Built To Be Read",
-    panelDescription:
-      "Seven engineering categories from Backend to Distributed Systems, a scroll-spy table of contents on every article, and threaded comments on everything that's published.",
-    icon: MessagesSquare,
-  },
-];
-
 export const faqs: Faq[] = [
   {
-    question: "Who can publish on CollabX?",
+    question: "Who writes what's in the archive?",
     answer:
-      "Anyone can read. A Contributor can write and submit Articles or Tech Reads. Only an Admin can publish or reject a submission — publishing is never a self-serve action.",
+      "Engineers who actually solved the problem. Every piece is written from real, first-hand experience, not summarized from someone else's post.",
   },
   {
-    question: "What happens when a submission gets rejected?",
+    question: "How do I know it's worth reading?",
     answer:
-      "The rejection reason travels back to the contributor. A rejected submission is never edited in place — the next fix is a brand-new version, so the review history always stays intact.",
+      "Nothing joins the archive unread. Another engineer looks at every submission before it becomes part of the archive, so what you find here has already been vetted.",
   },
   {
-    question: "Can I use Mermaid diagrams in an Article?",
+    question: "What kind of problems does it cover?",
     answer:
-      "Yes. Drop a ```mermaid fence anywhere in your Markdown and it renders as an actual diagram, both in the live editor preview and on the published page — no separate diagramming tool needed.",
+      "Backend, distributed systems, infra, databases: the problems you hit at 2am and wish someone had already written down. Seven engineering categories in total.",
   },
   {
-    question: "What's the difference between an Article and a Tech Read?",
+    question: "How is this different from a random blog?",
     answer:
-      "An Article is an original write-up you author yourself. A Tech Read curates an external resource — a blog post, talk, or paper — with your own summary and source attribution.",
+      "A blog is one person's feed. This is a shared archive, organized so the answer you needed once is still findable months later, not just read once and forgotten.",
   },
   {
-    question: "Can an admin fix a typo without rejecting the whole submission?",
+    question: "How do I contribute?",
     answer:
-      "Yes. While a submission is a draft or pending review, an admin (or the original contributor) can edit its title, summary, or content directly, instead of bouncing it back for a full resubmission.",
-  },
-];
-
-export const PATHS: Path[] = [
-  {
-    d: "M 0 0 L 0 404.609",
-    transform: "translate(370 0)",
-  },
-  {
-    d: "M 164 0 L 98.814 0 L 0 83.557 L 0 205",
-    transform: "translate(400 110)",
-  },
-  {
-    d: "M 0 0 L 56.317 0 C 93.572 34.834 114.632 53.417 155 84.826 L 155 206",
-    transform: "translate(181.152 110)",
-  },
-  {
-    d: "M 0 0 L 295 0 L 295 81",
-    transform: "translate(0 221)",
-  },
-  {
-    d: "M 296 0 L 0 0 L 0 79",
-    transform: "translate(438 221)",
-  },
-] as const;
-
-export const workflowsteps: workflowStep[] = [
-  {
-    title: "Write",
-    description: "Draft in Markdown with live Mermaid previews and a formatting toolbar.",
-    icon: Pencil,
-    border: "border-sky-300",
-    bg: "from-sky-100 via-slate-50 to-sky-50",
-  },
-  {
-    title: "Submit",
-    description: "Send it for review — one active draft per Article or Tech Read at a time.",
-    icon: Send,
-    border: "border-orange-300",
-    bg: "from-orange-100 via-rose-50 to-amber-50",
-  },
-  {
-    title: "Review",
-    description: "An admin edits, publishes, or rejects with a reason — no silent drops.",
-    icon: ShieldCheck,
-    border: "border-cyan-300",
-    bg: "from-cyan-100 via-sky-50 to-indigo-50",
-  },
-  {
-    title: "Discover",
-    description: "Readers browse by category, follow the table of contents, and join the discussion.",
-    icon: MessagesSquare,
-    border: "border-lime-300",
-    bg: "from-yellow-100 via-green-50 to-lime-100",
+      "Sign up as a contributor and write. If you've solved something worth remembering, it belongs in the archive.",
   },
 ];
 
 export const leftFeatures: Feature[] = [
   {
-    title: "MARKDOWN + MERMAID",
+    title: "WRITTEN FROM EXPERIENCE",
     description:
-      "Write in a real Markdown editor with syntax highlighting and a live preview — diagrams render straight from ```mermaid fences.",
+      "Every article comes from an engineer who actually hit the problem, not a rewrite of someone else's write-up.",
     icon: Sparkles,
     accent: true,
   },
   {
-    title: "VERSIONED SUBMISSIONS",
+    title: "CHECKED BEFORE IT COUNTS",
     description:
-      "Every edit after a rejection is a new version — nothing is silently overwritten, and the history is never lost.",
+      "A second engineer reads every piece before it joins the archive, so what's here is worth your time.",
     icon: RefreshCw,
   },
   {
-    title: "ROLE-BASED ACCESS",
-    description: "Admins moderate and publish, Contributors write and submit, Readers browse and comment.",
+    title: "OPEN TO EVERY ENGINEER",
+    description:
+      "Anyone can contribute. The archive grows because engineers keep adding what they've learned.",
     icon: Users,
   },
 ];
 
 export const rightFeatures: Feature[] = [
   {
-    title: "THREADED COMMENTS",
-    description: "Readers discuss published Articles and Tech Reads directly, with admin moderation when needed.",
-    icon: MessagesSquare,
+    title: "BUILT TO BE FOUND AGAIN",
+    description:
+      "Organized by category, so the solution you needed once is still there when the next engineer needs it.",
+    icon: Search,
   },
   {
-    title: "FULL VERSION HISTORY",
+    title: "ALWAYS GROWING",
     description:
-      "Every draft, rejection, and published version of a piece stays on record — nothing disappears when it's edited.",
+      "Every new contribution adds to what the next engineer can lean on. The archive never stops growing.",
     icon: Layers,
   },
 ];
